@@ -21,6 +21,7 @@ function getAvatarColor(index) {
 export default function StudentCard({
   student,
   onEdit,
+  onReport,
   onDelete,
   onPay,
   canEdit = true,
@@ -62,6 +63,15 @@ export default function StudentCard({
           onMouseLeave={(e) => (e.currentTarget.style.background = '#E6F1FB')}
         >
           Pay
+        </button>
+        <button
+          type="button"
+          style={s.btn}
+          onClick={() => onReport?.(student)}
+          onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--color-background-secondary)')}
+          onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+        >
+          Report
         </button>
         {canEdit ? (
           <button

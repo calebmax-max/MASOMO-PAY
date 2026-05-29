@@ -83,12 +83,14 @@ def stk_push():
 
     student = Student.query.get_or_404(payload["student_id"])
     response = initiate_stk_push(payload["phone_number"], payload["amount"], student.admission_no)
+    checkout_request_id = response.get("CheckoutRequestID") or response.get("checkout_request_id")
     payment = Payment(
         student_id=student.id,
         school_id=student.school_id,
         amount=payload["amount"],
-        payment_method="stkpush",
-        mpesa_code=response.get("checkout_request_id") or response.get("reference"),
+        payment_method="daraja_stkpush",
+        gateway_reference=checkout_request_id,
+        mpesa_code=None,
         status="pending",
         recorded_by=int(get_jwt_identity()),
     )

@@ -16,8 +16,11 @@ class BackendTestCase(unittest.TestCase):
                 "SQLALCHEMY_DATABASE_URI": "sqlite:///:memory:",
                 "JWT_SECRET_KEY": "test-secret",
                 "SECRET_KEY": "test-secret",
-                "INTASEND_PUBLIC_KEY": "",
-                "INTASEND_SECRET_KEY": "",
+                "DARAJA_CONSUMER_KEY": "",
+                "DARAJA_CONSUMER_SECRET": "",
+                "DARAJA_SHORTCODE": "",
+                "DARAJA_PASSKEY": "",
+                "DARAJA_CALLBACK_URL": "",
             }
         )
         self.context = self.app.app_context()
@@ -91,6 +94,13 @@ class BackendTestCase(unittest.TestCase):
         token = self.register_admin("students@example.com")
         student = self.create_student(token, "ADM002")
 
+        detail_response = self.client.get(
+            f"/api/students/{student['id']}",
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        self.assertEqual(detail_response.status_code, 200)
+        self.assertEqual(detail_response.get_json()["student"]["admission_no"], "ADM002")
+
         list_response = self.client.get(
             "/api/students",
             headers={"Authorization": f"Bearer {token}"},
@@ -154,11 +164,24 @@ class BackendTestCase(unittest.TestCase):
         db.session.commit()
 
         response = self.client.post(
-            "/api/webhooks/intasend",
+            "/api/webhooks/daraja",
             json={
-                "transaction_code": "MPESA123",
-                "amount": 250,
-                "admission_no": "ADM004",
+                "Body": {
+                    "stkCallback": {
+                        "MerchantRequestID": "MRCH-123",
+                        "CheckoutRequestID": "CHK-123",
+                        "ResultCode": 0,
+                        "ResultDesc": "The service request is processed successfully.",
+                        "CallbackMetadata": {
+                            "Item": [
+                                {"Name": "Amount", "Value": 250},
+                                {"Name": "MpesaReceiptNumber", "Value": "MPESA123"},
+                                {"Name": "PhoneNumber", "Value": 254712345678},
+                                {"Name": "AccountReference", "Value": "ADM004"},
+                            ]
+                        },
+                    }
+                }
             },
         )
         self.assertEqual(response.status_code, 200)

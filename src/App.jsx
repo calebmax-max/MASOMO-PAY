@@ -10,6 +10,8 @@ import PortalLogin from './pages/PortalLogin';
 import Dashboard from './pages/Dashboard';
 import Students from './pages/Students';
 import AddStudent from './pages/AddStudent';
+import EditStudent from './pages/EditStudent';
+import StudentReport from './pages/StudentReport';
 import Payments from './pages/Payments';
 import Reports from './pages/Reports';
 import Settings from './pages/Settings';
@@ -39,6 +41,14 @@ function AppShell() {
     if (path === '/login') return <Login />;
     if (path === '/portal/login') return <PortalLogin />;
     if (path === '/portal/dashboard') return <PortalDashboard />;
+    const editStudentMatch = path.match(/^\/students\/(\d+)\/edit$/);
+    if (editStudentMatch) {
+      return <EditStudent studentId={Number(editStudentMatch[1])} />;
+    }
+    const studentReportMatch = path.match(/^\/students\/(\d+)\/report$/);
+    if (studentReportMatch) {
+      return <StudentReport studentId={Number(studentReportMatch[1])} />;
+    }
     const routeMap = {
       '/dashboard': <Dashboard />,
       '/students': <Students />,

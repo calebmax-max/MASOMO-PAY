@@ -14,6 +14,7 @@ class Payment(db.Model):
     school_id = db.Column(db.Integer, db.ForeignKey("schools.id"), nullable=True)
     amount = db.Column(db.Numeric(12, 2), nullable=False)
     payment_method = db.Column(db.String(50), nullable=False)
+    gateway_reference = db.Column(db.String(120), unique=True, nullable=True, index=True)
     mpesa_code = db.Column(db.String(120), unique=True, nullable=True, index=True)
     status = db.Column(db.String(50), nullable=False, default="pending")
     timestamp = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)

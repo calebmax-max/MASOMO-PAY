@@ -5,6 +5,10 @@ export function getStudents(query = '') {
   return apiRequest(`/api/students${suffix}`);
 }
 
+export function getStudent(studentId) {
+  return apiRequest(`/api/students/${studentId}`);
+}
+
 export function createStudent(payload) {
   return apiRequest('/api/students', {
     method: 'POST',

@@ -62,6 +62,16 @@ def sync_legacy_schema(app):
                         )
                     )
                     db.session.commit()
+            if "payments" in inspector.get_table_names():
+                payment_columns = {column["name"] for column in inspector.get_columns("payments")}
+                if "gateway_reference" not in payment_columns:
+                    db.session.execute(
+                        text(
+                            "ALTER TABLE payments "
+                            "ADD COLUMN gateway_reference VARCHAR(120) NULL"
+                        )
+                    )
+                    db.session.commit()
         app.config["SCHEMA_SYNCED"] = True
     except Exception as exc:  # pragma: no cover - defensive for local/dev DB drift
         app.logger.warning("Skipping schema sync: %s", exc)

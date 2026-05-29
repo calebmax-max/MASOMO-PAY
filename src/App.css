@@ -550,3 +550,81 @@ select {
     padding: 16px 12px 28px;
   }
 }
+
+@media print {
+  @page {
+    margin: 12mm;
+  }
+
+  body {
+    background: #ffffff !important;
+    color: #111827 !important;
+  }
+
+  .report-no-print,
+  .navbar,
+  .sidebar,
+  .portal-navbar {
+    display: none !important;
+  }
+
+  .student-report-page {
+    min-height: auto !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+    color: #111827 !important;
+  }
+
+  .student-report-page * {
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+
+  .student-report-page h1,
+  .student-report-page h2,
+  .student-report-page p,
+  .student-report-page span,
+  .student-report-page strong,
+  .student-report-page th,
+  .student-report-page td {
+    color: #111827 !important;
+  }
+
+  .student-report-page .student-report-page {
+    background: #ffffff !important;
+  }
+
+  .student-report-page > div,
+  .student-report-page .report-panel,
+  .student-report-page .report-metric {
+    background: #ffffff !important;
+    border-color: #d1d5db !important;
+  }
+
+  .student-report-page .report-metric,
+  .student-report-page .report-panel,
+  .student-report-page .report-error {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .student-report-page .report-table th,
+  .student-report-page .report-table td {
+    border-color: #d1d5db !important;
+  }
+
+  .student-report-page .report-status {
+    border: 1px solid #d1d5db !important;
+    background: #ffffff !important;
+    color: #111827 !important;
+  }
+
+  .student-report-page .report-error {
+    background: #ffffff !important;
+    border-color: #d1d5db !important;
+  }
+
+  .student-report-page a[href]:after {
+    content: '';
+  }
+}

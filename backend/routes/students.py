@@ -42,8 +42,15 @@ def list_students():
                 Student.class_name.ilike(like_query),
                 Student.parent_phone.ilike(like_query),
             )
-        )
+    )
     return jsonify({"students": [serialize_student(student) for student in students.order_by(Student.name.asc()).all()]})
+
+
+@students_bp.get("/<int:student_id>")
+@role_required("admin", "accountant", "staff")
+def get_student(student_id):
+    student = Student.query.get_or_404(student_id)
+    return jsonify({"student": serialize_student(student)})
 
 
 @students_bp.post("")
@@ -82,9 +89,21 @@ def update_student(student_id):
     student = Student.query.get_or_404(student_id)
     payload = request.get_json(silent=True) or {}
 
-    for field in ["name", "admission_no", "class_name", "parent_phone", "school_id"]:
+    if "parent_phone" in payload and payload["parent_phone"] and not is_valid_phone(payload["parent_phone"]):
+        return jsonify({"error": "validation_error", "message": "Invalid parent phone"}), 400
+
+    if "admission_no" in payload:
+        admission_no = str(payload["admission_no"]).strip()
+        if admission_no != student.admission_no and Student.query.filter_by(admission_no=admission_no).first():
+            return jsonify({"error": "conflict", "message": "Admission number already exists"}), 409
+        student.admission_no = admission_no
+
+    for field in ["name", "class_name", "parent_phone", "school_id"]:
         if field in payload:
-            setattr(student, field, payload[field])
+            value = payload[field]
+            if isinstance(value, str):
+                value = value.strip()
+            setattr(student, field, value)
     if "portal_pin" in payload and payload["portal_pin"]:
         student.portal_pin_hash = generate_password_hash(str(payload["portal_pin"]).strip())
     if "balance" in payload:

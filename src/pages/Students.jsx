@@ -109,6 +109,7 @@ export default function Students() {
                 student={student}
                 index={i}
                 onDelete={handleDelete}
+                onReport={() => navigateTo(`/students/${student.id}/report`)}
                 onEdit={() => navigateTo(`/students/${student.id}/edit`)}
                 onPay={(s) => navigateTo(`/payments?student_id=${s.id}`)}
                 canEdit={user?.role === 'admin'}

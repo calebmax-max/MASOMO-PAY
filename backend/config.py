@@ -22,10 +22,20 @@ class Config:
         "pool_recycle": 280,
     }
     JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", SECRET_KEY)
-    INTASEND_PUBLIC_KEY = os.getenv("INTASEND_PUBLIC_KEY", "")
-    INTASEND_SECRET_KEY = os.getenv("INTASEND_SECRET_KEY", "")
-    INTASEND_KEYS = {
-        "public_key": INTASEND_PUBLIC_KEY,
-        "secret_key": INTASEND_SECRET_KEY,
+    DARAJA_CONSUMER_KEY = os.getenv("DARAJA_CONSUMER_KEY", "")
+    DARAJA_CONSUMER_SECRET = os.getenv("DARAJA_CONSUMER_SECRET", "")
+    DARAJA_SHORTCODE = os.getenv("DARAJA_SHORTCODE", "")
+    DARAJA_PASSKEY = os.getenv("DARAJA_PASSKEY", "")
+    DARAJA_CALLBACK_URL = os.getenv("DARAJA_CALLBACK_URL", "")
+    DARAJA_BASE_URL = os.getenv("DARAJA_BASE_URL", "https://sandbox.safaricom.co.ke")
+    DARAJA_TRANSACTION_TYPE = os.getenv("DARAJA_TRANSACTION_TYPE", "CustomerPayBillOnline")
+    DARAJA_CONFIG = {
+        "consumer_key": DARAJA_CONSUMER_KEY,
+        "consumer_secret": DARAJA_CONSUMER_SECRET,
+        "shortcode": DARAJA_SHORTCODE,
+        "passkey": DARAJA_PASSKEY,
+        "callback_url": DARAJA_CALLBACK_URL,
+        "base_url": DARAJA_BASE_URL,
+        "transaction_type": DARAJA_TRANSACTION_TYPE,
     }
     DEBUG = (os.getenv("DEBUG") or "false").lower() in {"1", "true", "yes", "on"}
