@@ -27,7 +27,15 @@ export default function PortalLogin() {
     <section style={s.shell}>
       <div style={s.center}>
         <div style={s.topbar}>
-          <img src="/logo512.png" alt="Masomo logo" style={s.logo} />
+          <img
+            src="/masomo-logo.png"
+            alt="Masomo logo"
+            style={s.logo}
+            onError={(event) => {
+              event.currentTarget.onerror = null;
+              event.currentTarget.src = '/logo512.png';
+            }}
+          />
           <div>
             <h1 style={s.pgTitle}>Student Portal</h1>
             <p style={s.pgSub}>Log in with your admission number and portal PIN.</p>

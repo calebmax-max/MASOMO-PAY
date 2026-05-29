@@ -47,7 +47,7 @@ def list_students():
 
 
 @students_bp.post("")
-@role_required("admin", "accountant")
+@role_required("admin")
 def create_student():
     payload = request.get_json(silent=True) or {}
     missing = require_fields(payload, ["name", "admission_no", "class_name"])
@@ -77,7 +77,7 @@ def create_student():
 
 
 @students_bp.put("/<int:student_id>")
-@role_required("admin", "accountant")
+@role_required("admin")
 def update_student(student_id):
     student = Student.query.get_or_404(student_id)
     payload = request.get_json(silent=True) or {}

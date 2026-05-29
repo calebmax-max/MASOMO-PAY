@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
+import { useAuth } from '../context/AuthContext';
 import StudentCard from '../components/StudentCard';
 import { deleteStudent, getStudents } from '../services/studentService';
 import { navigateTo } from '../utils/navigation';
 
 export default function Students() {
+  const { user } = useAuth();
   const [students, setStudents] = useState([]);
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(true);
@@ -52,15 +54,17 @@ export default function Students() {
           <h1 style={s.pgTitle}>Students</h1>
           <p style={s.pgSub}>Search, manage, and track balances</p>
         </div>
-        <button
-          type="button"
-          style={s.addBtn}
-          onClick={() => navigateTo('/students/new')}
-          onMouseEnter={(e) => (e.currentTarget.style.background = '#1A3D5C')}
-          onMouseLeave={(e) => (e.currentTarget.style.background = '#1A2F4A')}
-        >
-          <PlusIcon /> Add student
-        </button>
+        {user?.role === 'admin' ? (
+          <button
+            type="button"
+            style={s.addBtn}
+            onClick={() => navigateTo('/students/new')}
+            onMouseEnter={(e) => (e.currentTarget.style.background = '#1A3D5C')}
+            onMouseLeave={(e) => (e.currentTarget.style.background = '#1A2F4A')}
+          >
+            <PlusIcon /> Add student
+          </button>
+        ) : null}
       </div>
 
       {/* ── Search ── */}
@@ -107,6 +111,8 @@ export default function Students() {
                 onDelete={handleDelete}
                 onEdit={() => navigateTo(`/students/${student.id}/edit`)}
                 onPay={(s) => navigateTo(`/payments?student_id=${s.id}`)}
+                canEdit={user?.role === 'admin'}
+                canDelete={user?.role === 'admin'}
               />
             ))}
           </ul>

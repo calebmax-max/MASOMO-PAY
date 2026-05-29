@@ -15,7 +15,16 @@ export default function Navbar() {
       {/* ── Brand ── */}
       <button type="button" style={s.brand} onClick={() => navigateTo('/dashboard')}>
         <div style={s.brandMark}>
-          <i className="ti ti-building-school" aria-hidden="true" style={{ fontSize: 15, color: '#7BB8F4' }} />
+          <img
+            src="/masomo-logo.png"
+            alt=""
+            aria-hidden="true"
+            style={s.brandLogo}
+            onError={(event) => {
+              event.currentTarget.onerror = null;
+              event.currentTarget.src = '/logo192.png';
+            }}
+          />
         </div>
         <span style={s.brandName}>Masomo Pay</span>
       </button>
@@ -95,6 +104,13 @@ const s = {
     alignItems: 'center',
     justifyContent: 'center',
     flexShrink: 0,
+    overflow: 'hidden',
+  },
+  brandLogo: {
+    width: '100%',
+    height: '100%',
+    objectFit: 'cover',
+    display: 'block',
   },
   brandName: {
     fontSize: 15,

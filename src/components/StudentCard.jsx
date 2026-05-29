@@ -18,7 +18,15 @@ function getAvatarColor(index) {
   return AVATAR_COLORS[index % AVATAR_COLORS.length];
 }
 
-export default function StudentCard({ student, onEdit, onDelete, onPay, index = 0 }) {
+export default function StudentCard({
+  student,
+  onEdit,
+  onDelete,
+  onPay,
+  canEdit = true,
+  canDelete = true,
+  index = 0,
+}) {
   const balance = calculateBalance(student);
   const { bg, fg } = getAvatarColor(index);
   const isOwed = balance > 0;
@@ -55,24 +63,28 @@ export default function StudentCard({ student, onEdit, onDelete, onPay, index = 
         >
           Pay
         </button>
-        <button
-          type="button"
-          style={s.btn}
-          onClick={() => onEdit?.(student)}
-          onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--color-background-secondary)')}
-          onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
-        >
-          Edit
-        </button>
-        <button
-          type="button"
-          style={{ ...s.btn, ...s.btnDelete }}
-          onClick={() => onDelete?.(student)}
-          onMouseEnter={(e) => (e.currentTarget.style.background = '#FCEBEB')}
-          onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
-        >
-          Delete
-        </button>
+        {canEdit ? (
+          <button
+            type="button"
+            style={s.btn}
+            onClick={() => onEdit?.(student)}
+            onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--color-background-secondary)')}
+            onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+          >
+            Edit
+          </button>
+        ) : null}
+        {canDelete ? (
+          <button
+            type="button"
+            style={{ ...s.btn, ...s.btnDelete }}
+            onClick={() => onDelete?.(student)}
+            onMouseEnter={(e) => (e.currentTarget.style.background = '#FCEBEB')}
+            onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+          >
+            Delete
+          </button>
+        ) : null}
       </div>
     </li>
   );

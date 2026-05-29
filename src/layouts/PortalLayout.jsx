@@ -9,7 +9,15 @@ export default function PortalLayout({ children }) {
     <div className="portal-shell">
       <header className="portal-navbar">
         <button type="button" className="portal-brand" onClick={() => navigateTo('/portal/dashboard')}>
-          <img src="/logo192.png" alt="Masomo logo" className="brand-logo" />
+          <img
+            src="/masomo-logo.png"
+            alt="Masomo logo"
+            className="brand-logo"
+            onError={(event) => {
+              event.currentTarget.onerror = null;
+              event.currentTarget.src = '/logo192.png';
+            }}
+          />
           <span>Student Portal</span>
         </button>
         <div className="navbar-actions">

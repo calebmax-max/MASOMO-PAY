@@ -17,6 +17,26 @@ export default function AddStudent() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
+  if (user?.role !== 'admin') {
+    return (
+      <section style={s.shell}>
+        <div style={s.card}>
+          <p style={s.cardTitle}>Access restricted</p>
+          <p style={s.muted}>Only the admin can add students.</p>
+          <div style={s.btnRow}>
+            <button
+              type="button"
+              style={s.cancelBtn}
+              onClick={() => navigateTo('/students')}
+            >
+              Back to students
+            </button>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   const updateField = (field, value) => setForm((c) => ({ ...c, [field]: value }));
 
   const handleSubmit = async (event) => {

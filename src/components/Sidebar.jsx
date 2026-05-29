@@ -1,4 +1,5 @@
 import React from 'react';
+import { useAuth } from '../context/AuthContext';
 import { navigateTo } from '../utils/navigation';
 
 const links = [
@@ -10,6 +11,7 @@ const links = [
 ];
 
 export default function Sidebar({ activePath }) {
+  const { user } = useAuth();
   const current = activePath || (typeof window !== 'undefined' ? window.location.pathname : '');
 
   return (
@@ -31,6 +33,7 @@ export default function Sidebar({ activePath }) {
         <p style={s.navSection}>Menu</p>
         {links.map(({ label, path, icon }) => {
           const active = current === path || current.startsWith(path + '/');
+          const isStudents = path === '/students';
           return (
             <button
               key={path}
@@ -39,14 +42,17 @@ export default function Sidebar({ activePath }) {
               onClick={() => navigateTo(path)}
               onMouseEnter={(e) => { if (!active) e.currentTarget.style.background = '#1C1E28'; }}
               onMouseLeave={(e) => { if (!active) e.currentTarget.style.background = 'transparent'; }}
-            >
-              {active && <span style={s.activeBar} />}
-              <i
-                className={`ti ${icon}`}
-                aria-hidden="true"
-                style={{ ...s.icon, color: active ? '#7BB8F4' : '#7A7A8C' }}
-              />
-              {label}
+              >
+                {active && <span style={s.activeBar} />}
+                <i
+                  className={`ti ${icon}`}
+                  aria-hidden="true"
+                  style={{ ...s.icon, color: active ? '#7BB8F4' : '#7A7A8C' }}
+                />
+              <span style={s.linkText}>
+                {label}
+                {isStudents && user?.role === 'accountant' ? <small style={s.linkBadge}>view only</small> : null}
+              </span>
             </button>
           );
         })}
@@ -155,6 +161,18 @@ const s = {
   icon: {
     fontSize: 18,
     flexShrink: 0,
+  },
+  linkText: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 8,
+  },
+  linkBadge: {
+    fontSize: 10,
+    fontWeight: 600,
+    color: '#7BB8F4',
+    textTransform: 'uppercase',
+    letterSpacing: '0.06em',
   },
   footer: {
     display: 'flex',

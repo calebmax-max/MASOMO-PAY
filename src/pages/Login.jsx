@@ -29,7 +29,15 @@ export default function Login() {
 
         {/* ── Logo + Header ── */}
         <div style={s.topbar}>
-          <img src="/logo512.png" alt="Masomo logo" style={s.logo} />
+          <img
+            src="/masomo-logo.png"
+            alt="Masomo logo"
+            style={s.logo}
+            onError={(event) => {
+              event.currentTarget.onerror = null;
+              event.currentTarget.src = '/logo512.png';
+            }}
+          />
           <div>
             <h1 style={s.pgTitle}>Masomo Pay</h1>
             <p style={s.pgSub}>Login to manage school fees, balances, and payments.</p>
