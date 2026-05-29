@@ -6,6 +6,7 @@ export default function Login() {
   const { login } = useAuth();
   const [email, setEmail] = useState('admin@masomo.ac.ke');
   const [password, setPassword] = useState('admin123');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -39,20 +40,34 @@ export default function Login() {
         <div style={s.card}>
           <p style={s.cardTitle}>Sign in</p>
           <form style={s.formGrid} onSubmit={handleSubmit}>
-            {[
-              { field: 'email',    label: 'Email',    type: 'email',    value: email,    setter: setEmail },
-              { field: 'password', label: 'Password', type: 'password', value: password, setter: setPassword },
-            ].map(({ field, label, type, value, setter }) => (
-              <label key={field} style={s.label}>
-                {label}
-                <input
-                  style={s.input}
-                  type={type}
-                  value={value}
-                  onChange={(e) => setter(e.target.value)}
-                />
-              </label>
-            ))}
+            <label style={s.label}>
+              Email
+              <input
+                style={s.input}
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            </label>
+
+            <label style={s.label}>
+              <span style={s.labelRow}>
+                <span>Password</span>
+                <button
+                  type="button"
+                  style={s.showBtn}
+                  onClick={() => setShowPassword((current) => !current)}
+                >
+                  {showPassword ? 'Hide' : 'Show'}
+                </button>
+              </span>
+              <input
+                style={s.input}
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            </label>
 
             {error && (
               <div style={s.errorBanner}>
@@ -181,6 +196,22 @@ const s = {
     fontFamily: "'DM Sans', system-ui, sans-serif",
     width: '100%',
     boxSizing: 'border-box',
+  },
+  labelRow: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  showBtn: {
+    border: '0',
+    background: 'transparent',
+    color: '#7BB8F4',
+    fontSize: 12,
+    fontWeight: 600,
+    cursor: 'pointer',
+    padding: 0,
+    fontFamily: "'DM Sans', system-ui, sans-serif",
   },
   errorBanner: {
     display: 'flex',

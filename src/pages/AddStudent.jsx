@@ -13,6 +13,7 @@ export default function AddStudent() {
     portal_pin: '',
     balance: 0,
   });
+  const [showPortalPin, setShowPortalPin] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -66,7 +67,6 @@ export default function AddStudent() {
             { field: 'admission_no', label: 'Admission number',  type: 'text',   placeholder: 'e.g. ADM-2024-001' },
             { field: 'class_name',   label: 'Class',             type: 'text',   placeholder: 'e.g. Form 2A' },
             { field: 'parent_phone', label: 'Parent phone',      type: 'text',   placeholder: 'e.g. 0712 345 678' },
-            { field: 'portal_pin',   label: 'Portal PIN',       type: 'password', placeholder: 'Set a PIN for parent login' },
             { field: 'balance',      label: 'Opening balance',   type: 'number', placeholder: '0' },
           ].map(({ field, label, type, placeholder }) => (
             <label key={field} style={s.label}>
@@ -80,6 +80,26 @@ export default function AddStudent() {
               />
             </label>
           ))}
+
+          <label style={s.label}>
+            <span style={s.labelRow}>
+              <span>Portal PIN</span>
+              <button
+                type="button"
+                style={s.showBtn}
+                onClick={() => setShowPortalPin((current) => !current)}
+              >
+                {showPortalPin ? 'Hide' : 'Show'}
+              </button>
+            </span>
+            <input
+              style={s.input}
+              type={showPortalPin ? 'text' : 'password'}
+              value={form.portal_pin}
+              placeholder="Set a PIN for parent login"
+              onChange={(e) => updateField('portal_pin', e.target.value)}
+            />
+          </label>
         </div>
 
         {error && <div style={s.errorBanner}><AlertIcon />{error}</div>}
@@ -210,6 +230,22 @@ const s = {
     fontFamily: "'DM Sans', system-ui, sans-serif",
     width: '100%',
     boxSizing: 'border-box',
+  },
+  labelRow: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  showBtn: {
+    border: '0',
+    background: 'transparent',
+    color: '#7BB8F4',
+    fontSize: 12,
+    fontWeight: 600,
+    cursor: 'pointer',
+    padding: 0,
+    fontFamily: "'DM Sans', system-ui, sans-serif",
   },
   errorBanner: {
     display: 'flex',

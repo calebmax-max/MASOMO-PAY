@@ -2,6 +2,7 @@ from flask import Flask, jsonify
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
 from flask_migrate import Migrate, stamp
+from sqlalchemy import inspect, text
 
 try:
     from .config import Config
@@ -44,6 +45,28 @@ def bootstrap_database(app):
     app.config["DATABASE_BOOTSTRAPPED"] = True
 
 
+def sync_legacy_schema(app):
+    if app.config.get("TESTING") or app.config.get("SCHEMA_SYNCED"):
+        return
+
+    try:
+        with app.app_context():
+            inspector = inspect(db.engine)
+            if "students" in inspector.get_table_names():
+                student_columns = {column["name"] for column in inspector.get_columns("students")}
+                if "portal_pin_hash" not in student_columns:
+                    db.session.execute(
+                        text(
+                            "ALTER TABLE students "
+                            "ADD COLUMN portal_pin_hash VARCHAR(255) NULL"
+                        )
+                    )
+                    db.session.commit()
+        app.config["SCHEMA_SYNCED"] = True
+    except Exception as exc:  # pragma: no cover - defensive for local/dev DB drift
+        app.logger.warning("Skipping schema sync: %s", exc)
+
+
 def create_app(config_overrides=None):
     app = Flask(__name__)
     app.config.from_object(Config)
@@ -55,6 +78,7 @@ def create_app(config_overrides=None):
     jwt.init_app(app)
     migrate.init_app(app, db)
     register_error_handlers(app)
+    sync_legacy_schema(app)
 
     app.register_blueprint(auth_bp, url_prefix="/api/auth")
     app.register_blueprint(students_bp, url_prefix="/api/students")

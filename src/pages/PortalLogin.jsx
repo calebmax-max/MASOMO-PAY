@@ -6,6 +6,7 @@ export default function PortalLogin() {
   const { login } = usePortalAuth();
   const [admissionNo, setAdmissionNo] = useState('');
   const [pin, setPin] = useState('');
+  const [showPin, setShowPin] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -47,12 +48,21 @@ export default function PortalLogin() {
             </label>
 
             <label style={s.label}>
-              Portal PIN
+              <span style={s.labelRow}>
+                <span>Portal PIN</span>
+                <button
+                  type="button"
+                  style={s.showBtn}
+                  onClick={() => setShowPin((current) => !current)}
+                >
+                  {showPin ? 'Hide' : 'Show'}
+                </button>
+              </span>
               <input
                 style={s.input}
                 value={pin}
                 onChange={(event) => setPin(event.target.value)}
-                type="password"
+                type={showPin ? 'text' : 'password'}
                 autoComplete="current-password"
               />
             </label>
@@ -191,6 +201,22 @@ const s = {
     fontFamily: "'DM Sans', system-ui, sans-serif",
     width: '100%',
     boxSizing: 'border-box',
+  },
+  labelRow: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  showBtn: {
+    border: '0',
+    background: 'transparent',
+    color: '#7BB8F4',
+    fontSize: 12,
+    fontWeight: 600,
+    cursor: 'pointer',
+    padding: 0,
+    fontFamily: "'DM Sans', system-ui, sans-serif",
   },
   errorBanner: {
     display: 'flex',

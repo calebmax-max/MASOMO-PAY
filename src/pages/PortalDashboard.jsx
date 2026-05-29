@@ -56,7 +56,7 @@ export default function PortalDashboard() {
         amount: Number(form.amount),
         phone_number: form.phone_number,
       });
-      setMessage('Payment request sent through IntaSend.');
+      setMessage('Payment request sent successfully.');
       await loadPortal();
     } catch (err) {
       setError(err.message || 'Could not start payment');
@@ -70,40 +70,41 @@ export default function PortalDashboard() {
       <div className="page-header">
         <div>
           <h1>My Account</h1>
-          <p>See your balance, payment history, and pay fees through IntaSend.</p>
+          <p>See your balance, payment history, and submit fee payments securely.</p>
         </div>
       </div>
 
-      {error ? <div className="error-banner">{error}</div> : null}
-      {message ? <div className="success-banner">{message}</div> : null}
+      {error ? <div className="portal-error-banner">{error}</div> : null}
+      {message ? <div className="portal-success-banner">{message}</div> : null}
 
       {loading ? (
-        <p className="muted">Loading portal...</p>
+        <p className="portal-muted">Loading portal...</p>
       ) : student ? (
         <>
           <div className="stats-grid">
-            <div className="card stat-card">
+            <div className="portal-card portal-stat-card">
               <span>Student</span>
               <strong>{student.name}</strong>
             </div>
-            <div className="card stat-card">
+            <div className="portal-card portal-stat-card">
               <span>Admission No</span>
               <strong>{student.admission_no}</strong>
             </div>
-            <div className="card stat-card">
+            <div className="portal-card portal-stat-card">
               <span>Balance</span>
               <strong>{formatCurrency(student.balance)}</strong>
             </div>
           </div>
 
-          <div className="card form-grid">
+          <div className="portal-card portal-form">
             <h2>Pay Fees</h2>
-            <p className="muted">Enter the amount you want to pay and the phone number that will receive the IntaSend prompt.</p>
+            <p className="portal-help">Enter the amount you want to pay and the phone number that will receive the payment prompt.</p>
 
-            <form className="form-grid" onSubmit={submitPayment}>
+            <form className="portal-form" onSubmit={submitPayment}>
               <label>
                 Amount
                 <input
+                  className="portal-input"
                   type="number"
                   value={form.amount}
                   onChange={(event) => setForm({ ...form, amount: event.target.value })}
@@ -113,26 +114,27 @@ export default function PortalDashboard() {
               <label>
                 Phone Number
                 <input
+                  className="portal-input"
                   value={form.phone_number}
                   onChange={(event) => setForm({ ...form, phone_number: event.target.value })}
                   placeholder="07..."
                 />
               </label>
               <div className="button-row">
-                <button type="submit" className="primary-btn" disabled={saving}>
-                  {saving ? 'Sending...' : 'Pay with IntaSend'}
+                <button type="submit" className="portal-primary-btn" disabled={saving}>
+                  {saving ? 'Sending...' : 'Submit Payment'}
                 </button>
               </div>
             </form>
           </div>
 
-          <div className="card">
+          <div className="portal-card">
             <div className="section-header">
               <h2>Payment History</h2>
             </div>
             {recentPayments.length ? (
-              <div className="table-wrap">
-                <table className="table">
+              <div className="portal-table-wrap">
+                <table className="portal-table">
                   <thead>
                     <tr>
                       <th>Amount</th>
@@ -148,7 +150,7 @@ export default function PortalDashboard() {
                         <td>{formatCurrency(payment.amount)}</td>
                         <td>{payment.payment_method}</td>
                         <td>
-                          <span className={`status-pill status-${payment.status}`}>{payment.status}</span>
+                          <span className={`status-pill portal-status-${payment.status}`}>{payment.status}</span>
                         </td>
                         <td>{formatDate(payment.timestamp)}</td>
                         <td>{payment.mpesa_code || '-'}</td>
@@ -158,12 +160,12 @@ export default function PortalDashboard() {
                 </table>
               </div>
             ) : (
-              <p className="muted">No payments yet.</p>
+              <p className="portal-empty">No payments yet.</p>
             )}
           </div>
         </>
       ) : (
-        <p className="muted">No student profile found.</p>
+        <p className="portal-empty">No student profile found.</p>
       )}
     </section>
   );
