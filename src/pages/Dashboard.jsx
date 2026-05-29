@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { PaymentTable } from '../components/PaymentTable';
 import { fetchPayments } from '../services/paymentService';
 import { apiRequest } from '../services/api';
 import { getStudents } from '../services/studentService';

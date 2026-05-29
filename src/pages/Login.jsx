@@ -24,7 +24,7 @@ export default function Login() {
   return (
     <div className="auth-shell">
       <form className="auth-card card" onSubmit={handleSubmit}>
-        <img src="/school-logo.png" alt="Masomo logo" className="auth-logo" />
+        <img src="" alt="Masomo logo" className="auth-logo" />
         <h1>Masomo Pay</h1>
         <p>Login to manage school fees, balances, and payments.</p>
 

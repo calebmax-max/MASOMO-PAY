@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
+import { useAuth } from '../context/AuthContext';
 import { createStudent } from '../services/studentService';
 import { navigateTo } from '../utils/navigation';
 
 export default function AddStudent() {
+  const { user } = useAuth();
   const [form, setForm] = useState({
     name: '',
     admission_no: '',
@@ -20,7 +22,11 @@ export default function AddStudent() {
     setLoading(true);
     setError('');
     try {
-      await createStudent(form);
+      await createStudent({
+        ...form,
+        school_id: user?.school_id || null,
+        balance: Number(form.balance),
+      });
       navigateTo('/students');
     } catch (err) {
       setError(err.message || 'Could not create student');

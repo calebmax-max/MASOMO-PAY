@@ -47,6 +47,11 @@ def create_app(config_overrides=None):
         result = seed_demo_data()
         print(result)
 
+    with app.app_context():
+        db.create_all()
+        if not app.config.get("TESTING"):
+            seed_demo_data()
+
     return app
 
 

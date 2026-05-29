@@ -18,7 +18,9 @@ export default function PaymentTable({ payments = [] }) {
         <tbody>
           {payments.map((payment) => (
             <tr key={payment.id}>
-              <td>{payment.student_name || payment.student_id || '-'}</td>
+              <td>
+                {payment.student_name || payment.student_admission_no || payment.student_id || '-'}
+              </td>
               <td>{formatCurrency(payment.amount)}</td>
               <td>{payment.payment_method}</td>
               <td>

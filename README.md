@@ -69,3 +69,17 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/d
 
 This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
 # MASOMO-PAY
+
+## Backend database
+
+This app can run against SQLite locally or a MySQL database on AlwaysData.
+
+Set the backend environment like this:
+
+```env
+DATABASE_URL=mysql://USER:PASSWORD@HOST:PORT/DATABASE_NAME
+SECRET_KEY=your-secret
+JWT_SECRET_KEY=your-jwt-secret
+```
+
+If you use an AlwaysData MySQL URL, the backend will normalize it to the SQLAlchemy MySQL driver automatically.

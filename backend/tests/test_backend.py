@@ -2,6 +2,8 @@ import unittest
 
 from app import create_app
 from database.db import db
+from models.fee_structure import FeeStructure
+from models.school import School
 from models.student import Student
 from services.reconcile import reconcile_payment
 
@@ -172,6 +174,59 @@ class BackendTestCase(unittest.TestCase):
         )
         self.assertEqual(status, "matched")
         self.assertEqual(payment.mpesa_code, "MPESA999")
+
+    def test_settings_route(self):
+        school = School(
+            name="Masomo Academy",
+            phone="+254700000000",
+            email="info@masomo.ac.ke",
+            address="Nairobi",
+        )
+        db.session.add(school)
+        db.session.flush()
+        db.session.add(
+            FeeStructure(
+                class_name="Grade 1",
+                term="Term 1",
+                amount=12000,
+                school_id=school.id,
+            )
+        )
+        db.session.commit()
+
+        register_response = self.client.post(
+            "/api/auth/register",
+            json={
+                "name": "School Admin",
+                "email": "settings@example.com",
+                "password": "secret123",
+                "role": "admin",
+                "school_id": school.id,
+            },
+        )
+        self.assertEqual(register_response.status_code, 201)
+        token = register_response.get_json()["access_token"]
+
+        get_response = self.client.get(
+            "/api/settings",
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        self.assertEqual(get_response.status_code, 200)
+        self.assertEqual(get_response.get_json()["school"]["name"], "Masomo Academy")
+        self.assertEqual(len(get_response.get_json()["fee_structures"]), 1)
+
+        update_response = self.client.put(
+            "/api/settings",
+            headers={"Authorization": f"Bearer {token}"},
+            json={
+                "name": "Masomo Pay School",
+                "phone": "+254711111111",
+                "email": "hello@masomo.ac.ke",
+                "address": "Westlands",
+            },
+        )
+        self.assertEqual(update_response.status_code, 200)
+        self.assertEqual(update_response.get_json()["school"]["name"], "Masomo Pay School")
 
 
 if __name__ == "__main__":

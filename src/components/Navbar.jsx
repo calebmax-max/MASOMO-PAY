@@ -8,7 +8,7 @@ export default function Navbar() {
   return (
     <header className="navbar">
       <button type="button" className="brand" onClick={() => navigateTo('/dashboard')}>
-        <img src="/school-logo.png" alt="Masomo logo" className="brand-logo" />
+        <img src="/logo192.png" alt="Masomo logo" className="brand-logo" />
         <span>Masomo Pay</span>
       </button>
 

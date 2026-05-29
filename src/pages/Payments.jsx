@@ -59,6 +59,10 @@ export default function Payments() {
   const submitManualPayment = async (event) => {
     event.preventDefault();
     resetFeedback();
+    if (!form.student_id || !form.amount) {
+      setError('Select a student and enter an amount.');
+      return;
+    }
     setSavingManual(true);
     try {
       await createManualPayment({
@@ -77,6 +81,10 @@ export default function Payments() {
 
   const submitSTKPush = async () => {
     resetFeedback();
+    if (!form.student_id || !form.amount || !form.phone_number) {
+      setError('Select a student, amount, and phone number first.');
+      return;
+    }
     setSavingStk(true);
     try {
       await initiateSTKPush({

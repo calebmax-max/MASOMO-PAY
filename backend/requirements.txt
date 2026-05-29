@@ -3,6 +3,7 @@ Flask-JWT-Extended
 Flask-SQLAlchemy
 Flask-Migrate
 Flask-Cors
+pymysql
 psycopg2-binary
 requests
 python-dotenv

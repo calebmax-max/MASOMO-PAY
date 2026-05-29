@@ -126,7 +126,7 @@ export default function Settings() {
             {feeStructures.map((item) => (
               <div key={item.id}>
                 <span>
-                  {item.class_name} · {item.term}
+                  {item.class_name} - {item.term}
                 </span>
                 <strong>KES {Number(item.amount || 0).toLocaleString('en-KE')}</strong>
               </div>
