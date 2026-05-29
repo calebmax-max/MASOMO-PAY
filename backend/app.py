@@ -83,9 +83,9 @@ def create_app(config_overrides=None):
 
     @app.cli.command("stamp-db")
     def stamp_db_command():
-        """Mark the current database schema as aligned with the latest migration."""
-        stamp(directory="database/migrations", revision="head")
-        print("Database stamped to head")
+        """Mark the existing manual schema as the initial Alembic revision."""
+        stamp(directory="database/migrations", revision="0001_initial_schema")
+        print("Database stamped to 0001_initial_schema")
 
     return app
 
