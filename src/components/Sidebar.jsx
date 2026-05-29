@@ -2,23 +2,177 @@ import React from 'react';
 import { navigateTo } from '../utils/navigation';
 
 const links = [
-  ['Dashboard', '/dashboard'],
-  ['Students', '/students'],
-  ['Payments', '/payments'],
-  ['Reports', '/reports'],
-  ['Settings', '/settings'],
+  { label: 'Dashboard', path: '/dashboard', icon: 'ti-layout-dashboard' },
+  { label: 'Students',  path: '/students',  icon: 'ti-users'            },
+  { label: 'Payments',  path: '/payments',  icon: 'ti-cash'             },
+  { label: 'Reports',   path: '/reports',   icon: 'ti-chart-bar'        },
+  { label: 'Settings',  path: '/settings',  icon: 'ti-settings'         },
 ];
 
-export default function Sidebar() {
+export default function Sidebar({ activePath }) {
+  const current = activePath || (typeof window !== 'undefined' ? window.location.pathname : '');
+
   return (
-    <aside className="sidebar">
-      <nav className="sidebar-nav">
-        {links.map(([label, path]) => (
-          <button key={path} type="button" className="sidebar-link" onClick={() => navigateTo(path)}>
-            {label}
-          </button>
-        ))}
+    <aside style={s.sidebar}>
+
+      {/* ── Brand ── */}
+      <div style={s.brand}>
+        <div style={s.brandMark}>
+          <i className="ti ti-building-school" aria-hidden="true" style={{ fontSize: 16, color: '#7BB8F4' }} />
+        </div>
+        <div>
+          <p style={s.brandName}>SchoolPay</p>
+          <p style={s.brandSub}>Fee management</p>
+        </div>
+      </div>
+
+      {/* ── Nav links ── */}
+      <nav style={s.nav}>
+        <p style={s.navSection}>Menu</p>
+        {links.map(({ label, path, icon }) => {
+          const active = current === path || current.startsWith(path + '/');
+          return (
+            <button
+              key={path}
+              type="button"
+              style={{ ...s.link, ...(active ? s.linkActive : {}) }}
+              onClick={() => navigateTo(path)}
+              onMouseEnter={(e) => { if (!active) e.currentTarget.style.background = '#1C1E28'; }}
+              onMouseLeave={(e) => { if (!active) e.currentTarget.style.background = 'transparent'; }}
+            >
+              {active && <span style={s.activeBar} />}
+              <i
+                className={`ti ${icon}`}
+                aria-hidden="true"
+                style={{ ...s.icon, color: active ? '#7BB8F4' : '#7A7A8C' }}
+              />
+              {label}
+            </button>
+          );
+        })}
       </nav>
+
+      {/* ── Footer ── */}
+      <div style={s.footer}>
+        <div style={s.footerDot} />
+        <span style={s.footerText}>Connected</span>
+      </div>
     </aside>
   );
 }
+
+/* ─── Styles ─────────────────────────────────────────────────── */
+const s = {
+  sidebar: {
+    width: 220,
+    minHeight: '100vh',
+    borderRight: '0.5px solid #2A2A38',
+    background: '#0D0F16',
+    display: 'flex',
+    flexDirection: 'column',
+    flexShrink: 0,
+    padding: '1.25rem 0',
+    fontFamily: "'DM Sans', var(--font-sans, system-ui, sans-serif)",
+  },
+  brand: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 10,
+    padding: '0 1.25rem 1.25rem',
+    borderBottom: '0.5px solid #2A2A38',
+    marginBottom: '1rem',
+  },
+  brandMark: {
+    width: 34,
+    height: 34,
+    borderRadius: 8,
+    background: '#0C2A44',
+    border: '0.5px solid #1A3D5C',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+  },
+  brandName: {
+    fontSize: 15,
+    fontWeight: 600,
+    color: '#F0F0F2',
+    margin: 0,
+    letterSpacing: '-0.01em',
+  },
+  brandSub: {
+    fontSize: 11,
+    color: '#7A7A8C',
+    marginTop: 1,
+    marginBottom: 0,
+  },
+  nav: {
+    display: 'flex',
+    flexDirection: 'column',
+    flex: 1,
+  },
+  navSection: {
+    fontSize: 10,
+    fontWeight: 500,
+    color: '#4A4A5A',
+    textTransform: 'uppercase',
+    letterSpacing: '0.08em',
+    padding: '0 1.25rem',
+    margin: '0 0 6px',
+  },
+  link: {
+    position: 'relative',
+    display: 'flex',
+    alignItems: 'center',
+    gap: 10,
+    width: '100%',
+    padding: '9px 1.25rem',
+    border: 'none',
+    background: 'transparent',
+    color: '#7A7A8C',
+    fontSize: 14,
+    fontWeight: 400,
+    cursor: 'pointer',
+    textAlign: 'left',
+    transition: 'background 0.1s, color 0.1s',
+    fontFamily: "'DM Sans', system-ui, sans-serif",
+  },
+  linkActive: {
+    background: '#0C2A44',
+    color: '#7BB8F4',
+    fontWeight: 500,
+  },
+  activeBar: {
+    position: 'absolute',
+    left: 0,
+    top: '50%',
+    transform: 'translateY(-50%)',
+    width: 3,
+    height: 18,
+    borderRadius: '0 3px 3px 0',
+    background: '#378ADD',
+  },
+  icon: {
+    fontSize: 18,
+    flexShrink: 0,
+  },
+  footer: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 7,
+    padding: '1rem 1.25rem 0',
+    borderTop: '0.5px solid #2A2A38',
+    marginTop: 'auto',
+  },
+  footerDot: {
+    width: 7,
+    height: 7,
+    borderRadius: '50%',
+    background: '#1D9E75',
+    flexShrink: 0,
+  },
+  footerText: {
+    fontSize: 12,
+    color: '#7A7A8C',
+  },
+};
