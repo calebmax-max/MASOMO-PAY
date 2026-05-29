@@ -1,6 +1,9 @@
 from datetime import datetime
 
-from database.db import db
+try:
+    from ..database.db import db
+except ImportError:
+    from database.db import db
 
 
 class Payment(db.Model):

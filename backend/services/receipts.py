@@ -3,7 +3,10 @@ from io import BytesIO
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 
-from utils.helpers import format_currency
+try:
+    from ..utils.helpers import format_currency
+except ImportError:
+    from utils.helpers import format_currency
 
 
 def build_receipt_data(payment, student=None):

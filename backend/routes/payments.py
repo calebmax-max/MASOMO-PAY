@@ -1,13 +1,22 @@
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import get_jwt_identity
 
-from database.db import db
-from middleware.auth_middleware import role_required
-from models.payment import Payment
-from models.student import Student
-from services.mpesa import initiate_stk_push
-from services.reconcile import reconcile_payment
-from utils.validators import is_valid_amount, require_fields
+try:
+    from ..database.db import db
+    from ..middleware.auth_middleware import role_required
+    from ..models.payment import Payment
+    from ..models.student import Student
+    from ..services.mpesa import initiate_stk_push
+    from ..services.reconcile import reconcile_payment
+    from ..utils.validators import is_valid_amount, require_fields
+except ImportError:
+    from database.db import db
+    from middleware.auth_middleware import role_required
+    from models.payment import Payment
+    from models.student import Student
+    from services.mpesa import initiate_stk_push
+    from services.reconcile import reconcile_payment
+    from utils.validators import is_valid_amount, require_fields
 
 payments_bp = Blueprint("payments", __name__)
 

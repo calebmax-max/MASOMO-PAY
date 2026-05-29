@@ -2,9 +2,14 @@ from flask import Blueprint, jsonify, request
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from database.db import db
-from models.user import User
-from utils.validators import is_valid_email, require_fields
+try:
+    from ..database.db import db
+    from ..models.user import User
+    from ..utils.validators import is_valid_email, require_fields
+except ImportError:
+    from database.db import db
+    from models.user import User
+    from utils.validators import is_valid_email, require_fields
 
 auth_bp = Blueprint("auth", __name__)
 

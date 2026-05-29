@@ -1,10 +1,16 @@
 from flask import Blueprint, jsonify, request
 from sqlalchemy import or_
 
-from database.db import db
-from middleware.auth_middleware import role_required
-from models.student import Student
-from utils.validators import is_valid_phone, require_fields
+try:
+    from ..database.db import db
+    from ..middleware.auth_middleware import role_required
+    from ..models.student import Student
+    from ..utils.validators import is_valid_phone, require_fields
+except ImportError:
+    from database.db import db
+    from middleware.auth_middleware import role_required
+    from models.student import Student
+    from utils.validators import is_valid_phone, require_fields
 
 students_bp = Blueprint("students", __name__)
 

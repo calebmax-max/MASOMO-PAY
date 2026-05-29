@@ -1,4 +1,7 @@
-from database.db import db
+try:
+    from ..database.db import db
+except ImportError:
+    from database.db import db
 
 
 class FeeStructure(db.Model):

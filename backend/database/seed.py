@@ -1,11 +1,19 @@
 from werkzeug.security import generate_password_hash
 
-from database.db import db
-from models.fee_structure import FeeStructure
-from models.payment import Payment
-from models.school import School
-from models.student import Student
-from models.user import User
+try:
+    from ..database.db import db
+    from ..models.fee_structure import FeeStructure
+    from ..models.payment import Payment
+    from ..models.school import School
+    from ..models.student import Student
+    from ..models.user import User
+except ImportError:
+    from database.db import db
+    from models.fee_structure import FeeStructure
+    from models.payment import Payment
+    from models.school import School
+    from models.student import Student
+    from models.user import User
 
 
 def seed_demo_data():
@@ -87,4 +95,3 @@ def seed_demo_data():
     db.session.add_all(payments)
     db.session.commit()
     return {"created": True, "school_id": school.id, "students": len(students), "payments": len(payments)}
-

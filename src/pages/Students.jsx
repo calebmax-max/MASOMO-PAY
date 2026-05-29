@@ -82,7 +82,12 @@ export default function Students() {
 
       <div className="students-grid">
         {students.map((student) => (
-          <StudentCard key={student.id} student={student} onDelete={handleDelete} />
+          <StudentCard
+            key={student.id}
+            student={student}
+            onDelete={handleDelete}
+            onPay={(selectedStudent) => navigateTo(`/payments?student_id=${selectedStudent.id}`)}
+          />
         ))}
       </div>
 

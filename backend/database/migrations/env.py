@@ -1,9 +1,17 @@
 from logging.config import fileConfig
 
 from alembic import context
+from flask import current_app
 
-from database.db import db
-import models  # noqa: F401
+try:
+    from ..db import db
+except ImportError:
+    from database.db import db
+
+try:
+    from ... import models  # noqa: F401
+except ImportError:
+    import models  # noqa: F401
 
 config = context.config
 if config.config_file_name is not None:

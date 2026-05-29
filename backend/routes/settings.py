@@ -1,11 +1,18 @@
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import get_jwt
 
-from database.db import db
-from middleware.auth_middleware import role_required
-from models.fee_structure import FeeStructure
-from models.school import School
-from utils.validators import require_fields
+try:
+    from ..database.db import db
+    from ..middleware.auth_middleware import role_required
+    from ..models.fee_structure import FeeStructure
+    from ..models.school import School
+    from ..utils.validators import require_fields
+except ImportError:
+    from database.db import db
+    from middleware.auth_middleware import role_required
+    from models.fee_structure import FeeStructure
+    from models.school import School
+    from utils.validators import require_fields
 
 settings_bp = Blueprint("settings", __name__)
 

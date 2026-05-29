@@ -162,6 +162,20 @@
   gap: 16px;
 }
 
+.student-card-copy {
+  display: grid;
+  gap: 6px;
+}
+
+.student-card-copy h3 {
+  margin: 0;
+}
+
+.student-card-meta {
+  display: grid;
+  gap: 4px;
+}
+
 .student-balance {
   font-size: 1.5rem;
   font-weight: 700;
@@ -247,6 +261,43 @@ select {
   display: grid;
   gap: 8px;
   font-weight: 600;
+}
+
+.student-search-results {
+  display: grid;
+  gap: 10px;
+}
+
+.student-search-item {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 0.9fr auto;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  border: 1px solid #dbe4f0;
+  background: #f8fbff;
+  color: #0f172a;
+  border-radius: 14px;
+  padding: 12px 14px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.student-search-name {
+  font-weight: 700;
+}
+
+.student-search-item small {
+  color: #64748b;
+}
+
+.student-search-item strong {
+  justify-self: end;
+}
+
+.student-search-item.is-selected {
+  border-color: #1d4ed8;
+  background: #eff6ff;
 }
 
 .mini-list {

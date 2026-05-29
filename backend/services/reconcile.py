@@ -1,8 +1,13 @@
 from decimal import Decimal
 
-from database.db import db
-from models.payment import Payment
-from models.student import Student
+try:
+    from ..database.db import db
+    from ..models.payment import Payment
+    from ..models.student import Student
+except ImportError:
+    from database.db import db
+    from models.payment import Payment
+    from models.student import Student
 
 
 def reconcile_payment(payload):

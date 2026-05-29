@@ -1,23 +1,24 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import PaymentTable from '../components/PaymentTable';
-import { createManualPayment, fetchPayments, initiateSTKPush } from '../services/paymentService';
+import { createManualPayment, fetchPayments } from '../services/paymentService';
 import { getStudents } from '../services/studentService';
+import { calculateBalance, formatCurrency } from '../utils/helpers';
 
 const initialForm = {
   student_id: '',
   amount: '',
-  phone_number: '',
 };
 
 export default function Payments() {
   const [payments, setPayments] = useState([]);
   const [students, setStudents] = useState([]);
   const [form, setForm] = useState(initialForm);
+  const [selectedStudent, setSelectedStudent] = useState(null);
+  const [studentSearch, setStudentSearch] = useState('');
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
   const [savingManual, setSavingManual] = useState(false);
-  const [savingStk, setSavingStk] = useState(false);
 
   const loadPayments = async () => {
     const data = await fetchPayments();
@@ -34,6 +35,17 @@ export default function Payments() {
         if (!mounted) return;
         setPayments(paymentData.payments || []);
         setStudents(studentData.students || []);
+
+        const params = new URLSearchParams(window.location.search);
+        const studentId = params.get('student_id');
+        if (studentId) {
+          const student = (studentData.students || []).find((item) => String(item.id) === String(studentId));
+          if (student) {
+            setForm((current) => ({ ...current, student_id: String(student.id) }));
+            setSelectedStudent(student);
+            setStudentSearch(`${student.name} - ${student.admission_no}`);
+          }
+        }
       } catch (err) {
         if (mounted) {
           setError(err.message || 'Could not load payments');
@@ -54,6 +66,26 @@ export default function Payments() {
   const resetFeedback = () => {
     setMessage('');
     setError('');
+  };
+
+  const filteredStudents = useMemo(() => {
+    const term = studentSearch.trim().toLowerCase();
+    if (!term) {
+      return students;
+    }
+    return students.filter((student) => {
+      const haystack = [student.name, student.admission_no, student.class_name]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase();
+      return haystack.includes(term);
+    });
+  }, [studentSearch, students]);
+
+  const selectStudent = (student) => {
+    setSelectedStudent(student);
+    setForm((current) => ({ ...current, student_id: String(student.id) }));
+    setStudentSearch(`${student.name} - ${student.admission_no}`);
   };
 
   const submitManualPayment = async (event) => {
@@ -79,52 +111,56 @@ export default function Payments() {
     }
   };
 
-  const submitSTKPush = async () => {
-    resetFeedback();
-    if (!form.student_id || !form.amount || !form.phone_number) {
-      setError('Select a student, amount, and phone number first.');
-      return;
-    }
-    setSavingStk(true);
-    try {
-      await initiateSTKPush({
-        student_id: Number(form.student_id),
-        amount: Number(form.amount),
-        phone_number: form.phone_number,
-      });
-      setMessage('STK push initiated.');
-      await loadPayments();
-    } catch (err) {
-      setError(err.message || 'Could not initiate STK push');
-    } finally {
-      setSavingStk(false);
-    }
-  };
-
   return (
     <section className="page-shell">
       <div className="page-header">
         <div>
           <h1>Payments</h1>
-          <p>Manage manual receipts and STK push requests.</p>
+          <p>Record a payment after a parent has paid and keep the fee ledger updated.</p>
         </div>
       </div>
 
       <form className="card form-grid" onSubmit={submitManualPayment}>
         <label>
-          Student
-          <select
-            value={form.student_id}
-            onChange={(event) => setForm({ ...form, student_id: event.target.value })}
-          >
-            <option value="">Select student</option>
-            {students.map((student) => (
-              <option key={student.id} value={student.id}>
-                {student.name} - {student.admission_no}
-              </option>
-            ))}
-          </select>
+          Search Student
+          <input
+            className="search-input"
+            value={studentSearch}
+            onChange={(event) => {
+              setStudentSearch(event.target.value);
+              const exactMatch = students.find((student) => {
+                const haystack = `${student.name} - ${student.admission_no}`.toLowerCase();
+                return haystack === event.target.value.trim().toLowerCase();
+              });
+              if (!event.target.value) {
+                setSelectedStudent(null);
+                setForm((current) => ({ ...current, student_id: '' }));
+              } else if (exactMatch) {
+                selectStudent(exactMatch);
+              }
+            }}
+            placeholder="Type a name or admission number"
+          />
         </label>
+        {filteredStudents.length ? (
+          <div className="student-search-results">
+            {filteredStudents.slice(0, 8).map((student) => (
+              <button
+                key={student.id}
+                type="button"
+                className={`student-search-item ${String(form.student_id) === String(student.id) ? 'is-selected' : ''}`}
+                onClick={() => selectStudent(student)}
+              >
+                <span className="student-search-name">{student.name}</span>
+                <small>{student.admission_no}</small>
+                <small>{student.class_name}</small>
+                <strong>{formatCurrency(calculateBalance(student))}</strong>
+              </button>
+            ))}
+          </div>
+        ) : studentSearch ? (
+          <p className="muted">No matching students found.</p>
+        ) : null}
         <label>
           Amount
           <input
@@ -133,25 +169,16 @@ export default function Payments() {
             onChange={(event) => setForm({ ...form, amount: event.target.value })}
           />
         </label>
-        <label>
-          Phone Number
-          <input
-            value={form.phone_number}
-            onChange={(event) => setForm({ ...form, phone_number: event.target.value })}
-          />
-        </label>
+
+        {selectedStudent ? (
+          <div className="muted">
+            Paying for <strong>{selectedStudent.name}</strong> ({selectedStudent.admission_no})
+          </div>
+        ) : null}
 
         <div className="button-row">
           <button type="submit" className="primary-btn" disabled={savingManual}>
-            {savingManual ? 'Saving...' : 'Save Manual Payment'}
-          </button>
-          <button
-            type="button"
-            className="secondary-btn"
-            onClick={submitSTKPush}
-            disabled={savingStk}
-          >
-            {savingStk ? 'Sending...' : 'Trigger STK Push'}
+            {savingManual ? 'Saving...' : 'Save Payment'}
           </button>
         </div>
 

@@ -1,7 +1,11 @@
 from flask import Blueprint, jsonify, request
 
-from services.mpesa import verify_payment
-from services.reconcile import reconcile_payment
+try:
+    from ..services.mpesa import verify_payment
+    from ..services.reconcile import reconcile_payment
+except ImportError:
+    from services.mpesa import verify_payment
+    from services.reconcile import reconcile_payment
 
 webhooks_bp = Blueprint("webhooks", __name__)
 

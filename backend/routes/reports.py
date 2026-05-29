@@ -1,8 +1,13 @@
 from flask import Blueprint, jsonify
 
-from middleware.auth_middleware import role_required
-from models.payment import Payment
-from models.student import Student
+try:
+    from ..middleware.auth_middleware import role_required
+    from ..models.payment import Payment
+    from ..models.student import Student
+except ImportError:
+    from middleware.auth_middleware import role_required
+    from models.payment import Payment
+    from models.student import Student
 
 reports_bp = Blueprint("reports", __name__)
 

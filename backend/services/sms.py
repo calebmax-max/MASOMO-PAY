@@ -1,4 +1,7 @@
-from utils.helpers import generate_reference
+try:
+    from ..utils.helpers import generate_reference
+except ImportError:
+    from utils.helpers import generate_reference
 
 
 def send_receipt(phone_number, payload):

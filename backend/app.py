@@ -3,19 +3,43 @@ from flask_cors import CORS
 from flask_jwt_extended import JWTManager
 from flask_migrate import Migrate
 
-from config import Config
-from database.db import db
-from middleware.error_handler import register_error_handlers
-from routes.auth import auth_bp
-from routes.payments import payments_bp
-from routes.reports import reports_bp
-from routes.settings import settings_bp
-from routes.students import students_bp
-from routes.webhooks import webhooks_bp
-from database.seed import seed_demo_data
+try:
+    from .config import Config
+    from .database.db import db
+    from .database.seed import seed_demo_data
+    from .middleware.error_handler import register_error_handlers
+    from .routes.auth import auth_bp
+    from .routes.payments import payments_bp
+    from .routes.reports import reports_bp
+    from .routes.settings import settings_bp
+    from .routes.students import students_bp
+    from .routes.webhooks import webhooks_bp
+except ImportError:
+    from config import Config
+    from database.db import db
+    from database.seed import seed_demo_data
+    from middleware.error_handler import register_error_handlers
+    from routes.auth import auth_bp
+    from routes.payments import payments_bp
+    from routes.reports import reports_bp
+    from routes.settings import settings_bp
+    from routes.students import students_bp
+    from routes.webhooks import webhooks_bp
 
 jwt = JWTManager()
 migrate = Migrate()
+
+
+def bootstrap_database(app):
+    if app.config.get("TESTING") or app.config.get("DATABASE_BOOTSTRAPPED"):
+        return
+
+    with app.app_context():
+        db.create_all()
+        if app.config.get("SEED_DEMO_DATA", True):
+            seed_demo_data()
+
+    app.config["DATABASE_BOOTSTRAPPED"] = True
 
 
 def create_app(config_overrides=None):
@@ -47,10 +71,12 @@ def create_app(config_overrides=None):
         result = seed_demo_data()
         print(result)
 
-    with app.app_context():
-        db.create_all()
-        if not app.config.get("TESTING"):
-            seed_demo_data()
+    @app.cli.command("init-db")
+    def init_db_command():
+        """Create all tables in the configured database."""
+        with app.app_context():
+            db.create_all()
+        print("Database tables created")
 
     return app
 

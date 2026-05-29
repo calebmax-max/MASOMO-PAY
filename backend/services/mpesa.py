@@ -2,8 +2,12 @@ from uuid import uuid4
 
 import requests
 
-from config import Config
-from utils.helpers import generate_reference
+try:
+    from ..config import Config
+    from ..utils.helpers import generate_reference
+except ImportError:
+    from config import Config
+    from utils.helpers import generate_reference
 
 
 def generate_token():

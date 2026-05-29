@@ -83,3 +83,18 @@ JWT_SECRET_KEY=your-jwt-secret
 ```
 
 If you use an AlwaysData MySQL URL, the backend will normalize it to the SQLAlchemy MySQL driver automatically.
+
+The Flask app creates missing tables on startup or on the first request, and it seeds the demo school data only when `SEED_DEMO_DATA` is left on.
+
+To create the tables manually on the configured database, run:
+
+```bash
+cd backend
+flask --app app init-db
+```
+
+To seed the demo school after that, run:
+
+```bash
+flask --app app seed-db
+```
