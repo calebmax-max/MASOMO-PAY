@@ -1,14 +1,19 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { PortalAuthProvider } from './context/PortalAuthContext';
 import DashboardLayout from './layouts/DashboardLayout';
+import PortalLayout from './layouts/PortalLayout';
 import ProtectedRoute from './components/ProtectedRoute';
+import PortalProtectedRoute from './components/PortalProtectedRoute';
 import Login from './pages/Login';
+import PortalLogin from './pages/PortalLogin';
 import Dashboard from './pages/Dashboard';
 import Students from './pages/Students';
 import AddStudent from './pages/AddStudent';
 import Payments from './pages/Payments';
 import Reports from './pages/Reports';
 import Settings from './pages/Settings';
+import PortalDashboard from './pages/PortalDashboard';
 import { navigateTo } from './utils/navigation';
 import './App.css';
 
@@ -32,6 +37,8 @@ function AppShell() {
 
   const page = useMemo(() => {
     if (path === '/login') return <Login />;
+    if (path === '/portal/login') return <PortalLogin />;
+    if (path === '/portal/dashboard') return <PortalDashboard />;
     const routeMap = {
       '/dashboard': <Dashboard />,
       '/students': <Students />,
@@ -47,6 +54,17 @@ function AppShell() {
     return page;
   }
 
+  if (path.startsWith('/portal')) {
+    if (path === '/portal/login') {
+      return page;
+    }
+    return (
+      <PortalProtectedRoute>
+        <PortalLayout>{page}</PortalLayout>
+      </PortalProtectedRoute>
+    );
+  }
+
   return (
     <ProtectedRoute>
       <DashboardLayout>{page}</DashboardLayout>
@@ -57,7 +75,9 @@ function AppShell() {
 export default function App() {
   return (
     <AuthProvider>
-      <AppShell />
+      <PortalAuthProvider>
+        <AppShell />
+      </PortalAuthProvider>
     </AuthProvider>
   );
 }

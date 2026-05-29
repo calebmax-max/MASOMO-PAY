@@ -1,22 +1,21 @@
+import os
+import sys
 from logging.config import fileConfig
 
 from alembic import context
 from flask import current_app
 
-try:
-    from ..db import db
-except ImportError:
-    from database.db import db
+BACKEND_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+if BACKEND_DIR not in sys.path:
+    sys.path.insert(0, BACKEND_DIR)
 
-try:
-    from ... import models  # noqa: F401
-except ImportError:
-    import models  # noqa: F401
+import models  # noqa: F401
 
 config = context.config
-if config.config_file_name is not None:
+if config.config_file_name and os.path.exists(config.config_file_name):
     fileConfig(config.config_file_name)
 
+db = current_app.extensions["migrate"].db
 target_metadata = db.metadata
 
 

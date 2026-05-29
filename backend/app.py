@@ -1,7 +1,7 @@
 from flask import Flask, jsonify
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
-from flask_migrate import Migrate
+from flask_migrate import Migrate, stamp
 
 try:
     from .config import Config
@@ -10,6 +10,7 @@ try:
     from .middleware.error_handler import register_error_handlers
     from .routes.auth import auth_bp
     from .routes.payments import payments_bp
+    from .routes.portal import portal_bp
     from .routes.reports import reports_bp
     from .routes.settings import settings_bp
     from .routes.students import students_bp
@@ -21,13 +22,14 @@ except ImportError:
     from middleware.error_handler import register_error_handlers
     from routes.auth import auth_bp
     from routes.payments import payments_bp
+    from routes.portal import portal_bp
     from routes.reports import reports_bp
     from routes.settings import settings_bp
     from routes.students import students_bp
     from routes.webhooks import webhooks_bp
 
 jwt = JWTManager()
-migrate = Migrate()
+migrate = Migrate(directory="database/migrations")
 
 
 def bootstrap_database(app):
@@ -57,6 +59,7 @@ def create_app(config_overrides=None):
     app.register_blueprint(auth_bp, url_prefix="/api/auth")
     app.register_blueprint(students_bp, url_prefix="/api/students")
     app.register_blueprint(payments_bp, url_prefix="/api/payments")
+    app.register_blueprint(portal_bp, url_prefix="/api/portal")
     app.register_blueprint(reports_bp, url_prefix="/api/reports")
     app.register_blueprint(settings_bp, url_prefix="/api/settings")
     app.register_blueprint(webhooks_bp, url_prefix="/api/webhooks")
@@ -77,6 +80,12 @@ def create_app(config_overrides=None):
         with app.app_context():
             db.create_all()
         print("Database tables created")
+
+    @app.cli.command("stamp-db")
+    def stamp_db_command():
+        """Mark the current database schema as aligned with the latest migration."""
+        stamp(directory="database/migrations", revision="head")
+        print("Database stamped to head")
 
     return app
 

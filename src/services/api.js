@@ -25,19 +25,47 @@ export function getUser() {
   return raw ? JSON.parse(raw) : null;
 }
 
-export async function apiRequest(path, options = {}) {
+export function getPortalToken() {
+  return localStorage.getItem('masomo_portal_token');
+}
+
+export function setPortalToken(token) {
+  if (!token) {
+    localStorage.removeItem('masomo_portal_token');
+    return;
+  }
+  localStorage.setItem('masomo_portal_token', token);
+}
+
+export function setPortalStudent(student) {
+  if (!student) {
+    localStorage.removeItem('masomo_portal_student');
+    return;
+  }
+  localStorage.setItem('masomo_portal_student', JSON.stringify(student));
+}
+
+export function getPortalStudent() {
+  const raw = localStorage.getItem('masomo_portal_student');
+  return raw ? JSON.parse(raw) : null;
+}
+
+function buildHeaders(options = {}, tokenGetter = getToken) {
   const headers = {
     'Content-Type': 'application/json',
     ...(options.headers || {}),
   };
-  const token = getToken();
+  const token = tokenGetter();
   if (token) {
     headers.Authorization = `Bearer ${token}`;
   }
+  return headers;
+}
 
+async function request(path, options = {}, tokenGetter = getToken) {
   const response = await fetch(`${API_BASE_URL}${path}`, {
     ...options,
-    headers,
+    headers: buildHeaders(options, tokenGetter),
   });
 
   const contentType = response.headers.get('content-type') || '';
@@ -51,4 +79,12 @@ export async function apiRequest(path, options = {}) {
   }
 
   return data;
+}
+
+export async function apiRequest(path, options = {}) {
+  return request(path, options, getToken);
+}
+
+export async function portalApiRequest(path, options = {}) {
+  return request(path, options, getPortalToken);
 }

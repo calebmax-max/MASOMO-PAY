@@ -43,7 +43,7 @@ class BackendTestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 201)
         return response.get_json()["access_token"]
 
-    def create_student(self, token, admission_no="ADM001"):
+    def create_student(self, token, admission_no="ADM001", portal_pin="1234"):
         response = self.client.post(
             "/api/students",
             headers={"Authorization": f"Bearer {token}"},
@@ -52,6 +52,7 @@ class BackendTestCase(unittest.TestCase):
                 "admission_no": admission_no,
                 "class_name": "Grade 1",
                 "parent_phone": "0712345678",
+                "portal_pin": portal_pin,
                 "balance": 1500,
             },
         )
@@ -227,6 +228,44 @@ class BackendTestCase(unittest.TestCase):
         )
         self.assertEqual(update_response.status_code, 200)
         self.assertEqual(update_response.get_json()["school"]["name"], "Masomo Pay School")
+
+    def test_student_portal_flow(self):
+        token = self.register_admin("portal@example.com")
+        student = self.create_student(token, "ADM900", "4321")
+
+        login_response = self.client.post(
+            "/api/portal/login",
+            json={
+                "admission_no": student["admission_no"],
+                "pin": "4321",
+            },
+        )
+        self.assertEqual(login_response.status_code, 200)
+        portal_token = login_response.get_json()["access_token"]
+
+        profile_response = self.client.get(
+            "/api/portal/profile",
+            headers={"Authorization": f"Bearer {portal_token}"},
+        )
+        self.assertEqual(profile_response.status_code, 200)
+        self.assertEqual(profile_response.get_json()["student"]["admission_no"], "ADM900")
+
+        pay_response = self.client.post(
+            "/api/portal/payments/stkpush",
+            headers={"Authorization": f"Bearer {portal_token}"},
+            json={
+                "amount": 250,
+                "phone_number": "0712345678",
+            },
+        )
+        self.assertEqual(pay_response.status_code, 202)
+
+        payments_response = self.client.get(
+            "/api/portal/payments",
+            headers={"Authorization": f"Bearer {portal_token}"},
+        )
+        self.assertEqual(payments_response.status_code, 200)
+        self.assertGreaterEqual(len(payments_response.get_json()["payments"]), 1)
 
 
 if __name__ == "__main__":

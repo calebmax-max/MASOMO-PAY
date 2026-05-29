@@ -10,6 +10,7 @@ export default function AddStudent() {
     admission_no: '',
     class_name: '',
     parent_phone: '',
+    portal_pin: '',
     balance: 0,
   });
   const [error, setError] = useState('');
@@ -65,6 +66,7 @@ export default function AddStudent() {
             { field: 'admission_no', label: 'Admission number',  type: 'text',   placeholder: 'e.g. ADM-2024-001' },
             { field: 'class_name',   label: 'Class',             type: 'text',   placeholder: 'e.g. Form 2A' },
             { field: 'parent_phone', label: 'Parent phone',      type: 'text',   placeholder: 'e.g. 0712 345 678' },
+            { field: 'portal_pin',   label: 'Portal PIN',       type: 'password', placeholder: 'Set a PIN for parent login' },
             { field: 'balance',      label: 'Opening balance',   type: 'number', placeholder: '0' },
           ].map(({ field, label, type, placeholder }) => (
             <label key={field} style={s.label}>

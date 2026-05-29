@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { navigateTo } from '../utils/navigation';
 
 export default function Login() {
   const { login } = useAuth();
@@ -25,8 +26,9 @@ export default function Login() {
     <section style={s.shell}>
       <div style={s.center}>
 
-        {/* ── Header ── */}
+        {/* ── Logo + Header ── */}
         <div style={s.topbar}>
+          <img src="/logo512.png" alt="Masomo logo" style={s.logo} />
           <div>
             <h1 style={s.pgTitle}>Masomo Pay</h1>
             <p style={s.pgSub}>Login to manage school fees, balances, and payments.</p>
@@ -36,10 +38,7 @@ export default function Login() {
         {/* ── Login card ── */}
         <div style={s.card}>
           <p style={s.cardTitle}>Sign in</p>
-          <form
-            style={s.formGrid}
-            onSubmit={handleSubmit}
-          >
+          <form style={s.formGrid} onSubmit={handleSubmit}>
             {[
               { field: 'email',    label: 'Email',    type: 'email',    value: email,    setter: setEmail },
               { field: 'password', label: 'Password', type: 'password', value: password, setter: setPassword },
@@ -63,6 +62,15 @@ export default function Login() {
             )}
 
             <div style={s.btnRow}>
+              <button
+                type="button"
+                style={s.secondaryBtn}
+                onClick={() => navigateTo('/portal/login')}
+                onMouseEnter={(e) => (e.currentTarget.style.background = '#1C1E28')}
+                onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+              >
+                Student / Parent Portal
+              </button>
               <button
                 type="submit"
                 style={s.submitBtn}
@@ -109,9 +117,16 @@ const s = {
   },
   topbar: {
     display: 'flex',
-    alignItems: 'flex-start',
-    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: 12,
     marginBottom: '2rem',
+  },
+  logo: {
+    width: 40,
+    height: 40,
+    borderRadius: 8,
+    flexShrink: 0,
+    objectFit: 'contain',
   },
   pgTitle: {
     fontSize: 22,
@@ -131,7 +146,6 @@ const s = {
     border: '0.5px solid #2A2A38',
     borderRadius: 12,
     padding: '1.25rem 1.5rem',
-    marginBottom: '1.25rem',
   },
   cardTitle: {
     fontSize: 14,
@@ -181,8 +195,24 @@ const s = {
   },
   btnRow: {
     display: 'flex',
-    justifyContent: 'flex-end',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 8,
     paddingTop: 4,
+  },
+  secondaryBtn: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    padding: '9px 14px',
+    borderRadius: 8,
+    border: '0.5px solid #2A2A38',
+    background: 'transparent',
+    color: '#7A7A8C',
+    fontSize: 13,
+    fontWeight: 500,
+    cursor: 'pointer',
+    transition: 'background 0.15s',
+    fontFamily: "'DM Sans', system-ui, sans-serif",
   },
   submitBtn: {
     display: 'inline-flex',

@@ -98,3 +98,30 @@ To seed the demo school after that, run:
 ```bash
 flask --app app seed-db
 ```
+
+## Student / Parent portal
+
+Student and parent accounts now log in through the portal using:
+
+- `Admission Number`
+- `Portal PIN`
+
+When adding a student in the staff app, set the `Portal PIN` field so the family can log in.
+
+Portal login:
+
+- staff login: `/login`
+- student/parent portal: `/portal/login`
+
+From the portal, the student/parent can:
+
+- view the student account balance
+- see recent payment history
+- start an IntaSend payment request
+
+If the `students` table already exists, apply the new portal PIN column with:
+
+```bash
+flask --app app stamp-db
+flask --app app db upgrade
+```

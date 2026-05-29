@@ -1,5 +1,6 @@
 from flask import Blueprint, jsonify, request
 from sqlalchemy import or_
+from werkzeug.security import generate_password_hash
 
 try:
     from ..database.db import db
@@ -57,11 +58,16 @@ def create_student():
     if Student.query.filter_by(admission_no=payload["admission_no"]).first():
         return jsonify({"error": "conflict", "message": "Admission number already exists"}), 409
 
+    portal_pin_hash = None
+    if payload.get("portal_pin"):
+        portal_pin_hash = generate_password_hash(str(payload["portal_pin"]).strip())
+
     student = Student(
         name=payload["name"].strip(),
         admission_no=payload["admission_no"].strip(),
         class_name=payload["class_name"].strip(),
         parent_phone=payload.get("parent_phone"),
+        portal_pin_hash=portal_pin_hash,
         balance=payload.get("balance", 0),
         school_id=payload.get("school_id"),
     )
@@ -79,6 +85,8 @@ def update_student(student_id):
     for field in ["name", "admission_no", "class_name", "parent_phone", "school_id"]:
         if field in payload:
             setattr(student, field, payload[field])
+    if "portal_pin" in payload and payload["portal_pin"]:
+        student.portal_pin_hash = generate_password_hash(str(payload["portal_pin"]).strip())
     if "balance" in payload:
         student.balance = payload["balance"]
 
