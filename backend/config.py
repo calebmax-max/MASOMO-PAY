@@ -22,20 +22,30 @@ class Config:
         "pool_recycle": 280,
     }
     JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", SECRET_KEY)
-    DARAJA_CONSUMER_KEY = os.getenv("DARAJA_CONSUMER_KEY", "")
-    DARAJA_CONSUMER_SECRET = os.getenv("DARAJA_CONSUMER_SECRET", "")
-    DARAJA_SHORTCODE = os.getenv("DARAJA_SHORTCODE", "")
-    DARAJA_PASSKEY = os.getenv("DARAJA_PASSKEY", "")
-    DARAJA_CALLBACK_URL = os.getenv("DARAJA_CALLBACK_URL", "")
-    DARAJA_BASE_URL = os.getenv("DARAJA_BASE_URL", "https://sandbox.safaricom.co.ke")
-    DARAJA_TRANSACTION_TYPE = os.getenv("DARAJA_TRANSACTION_TYPE", "CustomerPayBillOnline")
+    MPESA_ENV = os.getenv("MPESA_ENV", "sandbox")
+    MPESA_CONSUMER_KEY = os.getenv("MPESA_CONSUMER_KEY", os.getenv("DARAJA_CONSUMER_KEY", ""))
+    MPESA_CONSUMER_SECRET = os.getenv("MPESA_CONSUMER_SECRET", os.getenv("DARAJA_CONSUMER_SECRET", ""))
+    MPESA_SHORTCODE = os.getenv("MPESA_SHORTCODE", os.getenv("DARAJA_SHORTCODE", ""))
+    MPESA_PASSKEY = os.getenv("MPESA_PASSKEY", os.getenv("DARAJA_PASSKEY", ""))
+    MPESA_CALLBACK_URL = os.getenv("MPESA_CALLBACK_URL", os.getenv("DARAJA_CALLBACK_URL", ""))
+    MPESA_ACCOUNT_REFERENCE = os.getenv("MPESA_ACCOUNT_REFERENCE", "account")
+    MPESA_TRANSACTION_DESC = os.getenv("MPESA_TRANSACTION_DESC", "account")
+    MPESA_BASE_URL = os.getenv("MPESA_BASE_URL", "https://sandbox.safaricom.co.ke")
+    MPESA_TRANSACTION_TYPE = os.getenv("MPESA_TRANSACTION_TYPE", "CustomerPayBillOnline")
+    DARAJA_CONSUMER_KEY = MPESA_CONSUMER_KEY
+    DARAJA_CONSUMER_SECRET = MPESA_CONSUMER_SECRET
+    DARAJA_SHORTCODE = MPESA_SHORTCODE
+    DARAJA_PASSKEY = MPESA_PASSKEY
+    DARAJA_CALLBACK_URL = MPESA_CALLBACK_URL
+    DARAJA_BASE_URL = MPESA_BASE_URL
+    DARAJA_TRANSACTION_TYPE = MPESA_TRANSACTION_TYPE
     DARAJA_CONFIG = {
-        "consumer_key": DARAJA_CONSUMER_KEY,
-        "consumer_secret": DARAJA_CONSUMER_SECRET,
-        "shortcode": DARAJA_SHORTCODE,
-        "passkey": DARAJA_PASSKEY,
-        "callback_url": DARAJA_CALLBACK_URL,
-        "base_url": DARAJA_BASE_URL,
-        "transaction_type": DARAJA_TRANSACTION_TYPE,
+        "consumer_key": MPESA_CONSUMER_KEY,
+        "consumer_secret": MPESA_CONSUMER_SECRET,
+        "shortcode": MPESA_SHORTCODE,
+        "passkey": MPESA_PASSKEY,
+        "callback_url": MPESA_CALLBACK_URL,
+        "base_url": MPESA_BASE_URL,
+        "transaction_type": MPESA_TRANSACTION_TYPE,
     }
     DEBUG = (os.getenv("DEBUG") or "false").lower() in {"1", "true", "yes", "on"}

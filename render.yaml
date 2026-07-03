@@ -9,3 +9,14 @@ services:
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.10
+      # Required in Render dashboard:
+      # MPESA_ENV
+      # MPESA_CONSUMER_KEY
+      # MPESA_CONSUMER_SECRET
+      # MPESA_SHORTCODE
+      # MPESA_PASSKEY
+      # MPESA_CALLBACK_URL
+      # MPESA_ACCOUNT_REFERENCE
+      # MPESA_TRANSACTION_DESC
+      # MPESA_BASE_URL
+      # MPESA_TRANSACTION_TYPE

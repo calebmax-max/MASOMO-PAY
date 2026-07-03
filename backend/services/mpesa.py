@@ -3,6 +3,7 @@ from datetime import datetime
 from zoneinfo import ZoneInfo
 
 import requests
+from flask import current_app, has_app_context
 
 try:
     from ..config import Config
@@ -13,6 +14,14 @@ except ImportError:
 
 
 NAIROBI_TZ = ZoneInfo("Africa/Nairobi")
+
+
+def _setting(name, default=""):
+    if has_app_context():
+        value = current_app.config.get(name)
+        if value is not None:
+            return value
+    return getattr(Config, name, default)
 
 
 def _normalize_phone_number(phone_number):
@@ -26,30 +35,33 @@ def _normalize_phone_number(phone_number):
     return phone
 
 
-def _daraja_ready():
+def _mpesa_ready():
     return all(
         [
-            Config.DARAJA_CONSUMER_KEY,
-            Config.DARAJA_CONSUMER_SECRET,
-            Config.DARAJA_SHORTCODE,
-            Config.DARAJA_PASSKEY,
-            Config.DARAJA_CALLBACK_URL,
+            _setting("MPESA_CONSUMER_KEY"),
+            _setting("MPESA_CONSUMER_SECRET"),
+            _setting("MPESA_SHORTCODE"),
+            _setting("MPESA_PASSKEY"),
+            _setting("MPESA_CALLBACK_URL"),
         ]
     )
 
 
-def _daraja_base_url():
-    return Config.DARAJA_BASE_URL.rstrip("/")
+def _mpesa_base_url():
+    return str(_setting("MPESA_BASE_URL", "https://sandbox.safaricom.co.ke")).rstrip("/")
 
 
 def _get_access_token():
-    if not _daraja_ready():
+    if has_app_context() and current_app.config.get("TESTING"):
+        return {"access_token": None, "mode": "mock"}
+
+    if not _mpesa_ready():
         return {"access_token": None, "mode": "mock"}
 
     response = requests.get(
-        f"{_daraja_base_url()}/oauth/v1/generate",
+        f"{_mpesa_base_url()}/oauth/v1/generate",
         params={"grant_type": "client_credentials"},
-        auth=(Config.DARAJA_CONSUMER_KEY, Config.DARAJA_CONSUMER_SECRET),
+        auth=(_setting("MPESA_CONSUMER_KEY"), _setting("MPESA_CONSUMER_SECRET")),
         timeout=30,
     )
     response.raise_for_status()
@@ -65,12 +77,23 @@ def generate_token():
 
 
 def _build_password(timestamp):
-    raw = f"{Config.DARAJA_SHORTCODE}{Config.DARAJA_PASSKEY}{timestamp}"
+    raw = f"{_setting('MPESA_SHORTCODE')}{_setting('MPESA_PASSKEY')}{timestamp}"
     return base64.b64encode(raw.encode("utf-8")).decode("utf-8")
 
 
 def initiate_stk_push(phone_number, amount, account_reference, description="School fee payment"):
-    if not _daraja_ready():
+    if has_app_context() and current_app.config.get("TESTING"):
+        return {
+            "success": True,
+            "mode": "mock",
+            "CheckoutRequestID": generate_reference("CHK"),
+            "MerchantRequestID": generate_reference("MRCH"),
+            "ResponseCode": "0",
+            "ResponseDescription": "Success. Request accepted for processing",
+            "CustomerMessage": "Mock STK push sent",
+        }
+
+    if not _mpesa_ready():
         return {
             "success": True,
             "mode": "mock",
@@ -87,20 +110,21 @@ def initiate_stk_push(phone_number, amount, account_reference, description="Scho
         raise RuntimeError("Could not obtain Daraja access token")
 
     timestamp = datetime.now(NAIROBI_TZ).strftime("%Y%m%d%H%M%S")
+    shortcode = _setting("MPESA_SHORTCODE")
     response = requests.post(
-        f"{_daraja_base_url()}/mpesa/stkpush/v1/processrequest",
+        f"{_mpesa_base_url()}/mpesa/stkpush/v1/processrequest",
         json={
-            "BusinessShortCode": Config.DARAJA_SHORTCODE,
+            "BusinessShortCode": shortcode,
             "Password": _build_password(timestamp),
             "Timestamp": timestamp,
-            "TransactionType": Config.DARAJA_TRANSACTION_TYPE,
+            "TransactionType": _setting("MPESA_TRANSACTION_TYPE", "CustomerPayBillOnline"),
             "Amount": int(float(amount)),
             "PartyA": _normalize_phone_number(phone_number),
-            "PartyB": Config.DARAJA_SHORTCODE,
+            "PartyB": shortcode,
             "PhoneNumber": _normalize_phone_number(phone_number),
-            "CallBackURL": Config.DARAJA_CALLBACK_URL,
+            "CallBackURL": _setting("MPESA_CALLBACK_URL"),
             "AccountReference": str(account_reference),
-            "TransactionDesc": description,
+            "TransactionDesc": description or _setting("MPESA_TRANSACTION_DESC", "account"),
         },
         headers={"Authorization": f"Bearer {access_token}"},
         timeout=30,
