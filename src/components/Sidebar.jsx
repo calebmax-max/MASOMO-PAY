@@ -20,10 +20,18 @@ export default function Sidebar({ activePath }) {
       {/* ── Brand ── */}
       <div style={s.brand}>
         <div style={s.brandMark}>
-          <i className="ti ti-building-school" aria-hidden="true" style={{ fontSize: 16, color: '#7BB8F4' }} />
+          <img
+            src="/masomo-logo.png"
+            alt="Masomo Pay"
+            style={s.brandLogo}
+            onError={(event) => {
+              event.currentTarget.onerror = null;
+              event.currentTarget.src = '/logo192.png';
+            }}
+          />
         </div>
         <div>
-          <p style={s.brandName}>SchoolPay</p>
+          <p style={s.brandName}>Masomo Pay</p>
           <p style={s.brandSub}>Fee management</p>
         </div>
       </div>
@@ -98,6 +106,12 @@ const s = {
     alignItems: 'center',
     justifyContent: 'center',
     flexShrink: 0,
+  },
+  brandLogo: {
+    width: 30,
+    height: 30,
+    objectFit: 'contain',
+    display: 'block',
   },
   brandName: {
     fontSize: 15,

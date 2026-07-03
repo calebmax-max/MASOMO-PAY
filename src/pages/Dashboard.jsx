@@ -49,7 +49,7 @@ export default function Dashboard() {
         ]);
         if (!mounted) return;
         setSummary({ ...summaryData, total_students: studentData.students?.length || 0 });
-        setPayments((paymentData.payments || []).slice(0, 5));
+        setPayments((paymentData.payments || []).filter((payment) => payment.status === 'completed').slice(0, 5));
       } catch (err) {
         if (mounted) setError(err.message || 'Could not load dashboard');
       } finally {
@@ -116,8 +116,24 @@ export default function Dashboard() {
       {/* ── Recent payments ── */}
       <div style={s.panel}>
         <div style={s.panelHead}>
-          <span style={s.panelTitle}>Recent payments</span>
-          {!loading && <span style={s.pill}>{payments.length} recent</span>}
+          <div style={s.panelTitleWrap}>
+            <span style={s.panelLogo}>
+              <img
+                src="/masomo-logo.png"
+                alt="Masomo Pay"
+                style={s.panelLogoImg}
+                onError={(event) => {
+                  event.currentTarget.onerror = null;
+                  event.currentTarget.src = '/logo192.png';
+                }}
+              />
+            </span>
+            <div>
+              <span style={s.panelTitle}>Successful payments</span>
+              <p style={s.panelSub}>Completed collections confirmed by the system</p>
+            </div>
+          </div>
+          {!loading && <span style={s.pill}>{payments.length} successful</span>}
         </div>
 
         {loading ? (
@@ -135,6 +151,7 @@ export default function Dashboard() {
                   avatarFg={fg}
                   method={payment.payment_method}
                   amount={formatCurrency(payment.amount)}
+                  status={payment.status}
                 />
               );
             })}
@@ -166,8 +183,10 @@ function MetricCard({ label, value, sub, iconClass, accent }) {
 }
 
 /* ─── PaymentRow ─────────────────────────────────────────────── */
-function PaymentRow({ name, avatarBg, avatarFg, method, amount }) {
+function PaymentRow({ name, avatarBg, avatarFg, method, amount, status }) {
   const [hovered, setHovered] = useState(false);
+  const statusLabel = getPaymentStatusLabel(status);
+  const { bg, fg, border } = getPaymentStatusColors(status);
   return (
     <li
       style={{ ...s.prow, background: hovered ? '#1C1E28' : 'transparent' }}
@@ -180,9 +199,41 @@ function PaymentRow({ name, avatarBg, avatarFg, method, amount }) {
         {method && <p style={s.pmeta}>{method === 'manual' ? 'cash' : 'mpesa'}</p>}
       </div>
       <span style={s.pamt}>{amount}</span>
-      <span style={s.statusBadge}>Paid</span>
+      <span style={{ ...s.statusBadge, background: bg, color: fg, borderColor: border }}>{statusLabel}</span>
     </li>
   );
+}
+
+function getPaymentStatusLabel(status) {
+  switch (status) {
+    case 'completed':
+      return 'Successful';
+    case 'pending':
+      return 'Pending';
+    case 'failed':
+      return 'Failed';
+    case 'unmatched':
+      return 'Unmatched';
+    case 'duplicate':
+      return 'Duplicate';
+    default:
+      return status || 'Unknown';
+  }
+}
+
+function getPaymentStatusColors(status) {
+  switch (status) {
+    case 'completed':
+      return { bg: '#0A2A22', fg: '#5DCAA5', border: '#1A4A34' };
+    case 'pending':
+      return { bg: '#2A1F08', fg: '#EF9F27', border: '#5B4009' };
+    case 'failed':
+      return { bg: '#2A1010', fg: '#F09595', border: '#7B2020' };
+    case 'duplicate':
+      return { bg: '#1E1A3A', fg: '#AFA9EC', border: '#3E356B' };
+    default:
+      return { bg: '#161820', fg: '#7A7A8C', border: '#2A2A38' };
+  }
 }
 
 /* ─── Icons ──────────────────────────────────────────────────── */
@@ -327,19 +378,48 @@ const s = {
     padding: '1rem 1.25rem',
     borderBottom: '0.5px solid #2A2A38',
   },
+  panelTitleWrap: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 12,
+    minWidth: 0,
+  },
+  panelLogo: {
+    width: 38,
+    height: 38,
+    borderRadius: 12,
+    background: 'linear-gradient(145deg, #0A2A22, #0C2A44)',
+    border: '0.5px solid #1A4A34',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+  },
+  panelLogoImg: {
+    width: 28,
+    height: 28,
+    objectFit: 'contain',
+    display: 'block',
+  },
   panelTitle: {
     fontSize: 14,
     fontWeight: 600,
     color: '#F0F0F2',
+    display: 'block',
+  },
+  panelSub: {
+    fontSize: 11,
+    color: '#7A7A8C',
+    margin: '2px 0 0',
   },
   pill: {
     fontSize: 11,
     padding: '3px 10px',
     borderRadius: 999,
-    background: '#0C2A44',
-    color: '#7BB8F4',
+    background: 'rgba(22, 101, 52, 0.18)',
+    color: '#86efac',
     fontWeight: 500,
-    border: '0.5px solid #1A3D5C',
+    border: '0.5px solid rgba(134, 239, 172, 0.35)',
   },
   list: {
     listStyle: 'none',
@@ -395,8 +475,7 @@ const s = {
     fontSize: 10,
     padding: '2px 8px',
     borderRadius: 999,
-    background: '#0A2A22',
-    color: '#5DCAA5',
+    border: '0.5px solid #1A4A34',
     fontWeight: 500,
     flexShrink: 0,
   },

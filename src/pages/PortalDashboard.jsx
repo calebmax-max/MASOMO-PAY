@@ -150,7 +150,7 @@ export default function PortalDashboard() {
                         <td>{formatCurrency(payment.amount)}</td>
                         <td>{payment.payment_method}</td>
                         <td>
-                          <span className={`status-pill portal-status-${payment.status}`}>{payment.status}</span>
+                          <span className={`status-pill portal-status-${payment.status}`}>{getStatusLabel(payment.status)}</span>
                         </td>
                         <td>{formatDate(payment.timestamp)}</td>
                         <td>{payment.mpesa_code || '-'}</td>
@@ -169,4 +169,21 @@ export default function PortalDashboard() {
       )}
     </section>
   );
+}
+
+function getStatusLabel(status) {
+  switch (status) {
+    case 'completed':
+      return 'Successful';
+    case 'pending':
+      return 'Pending';
+    case 'failed':
+      return 'Failed';
+    case 'unmatched':
+      return 'Unmatched';
+    case 'duplicate':
+      return 'Duplicate';
+    default:
+      return status || 'Unknown';
+  }
 }

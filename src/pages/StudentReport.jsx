@@ -30,45 +30,14 @@ export default function StudentReport({ studentId }) {
     };
   }, [studentId]);
 
-  const payments = useMemo(() => report?.payments || [], [report]);
+  const payments = useMemo(
+    () => (report?.payments || []).filter((payment) => payment.status !== 'failed'),
+    [report]
+  );
   const student = report?.student || null;
 
   const handlePrint = () => {
     window.print();
-  };
-
-  const handleDownloadCsv = () => {
-    if (!student) return;
-
-    const rows = [
-      ['Student', student.name],
-      ['Admission No', student.admission_no],
-      ['Class', student.class_name || ''],
-      ['Balance', formatCurrency(student.balance)],
-      [],
-      ['Amount', 'Method', 'Status', 'Date'],
-      ...payments.map((payment) => [
-        String(payment.amount ?? ''),
-        payment.payment_method === 'manual' ? 'cash' : (payment.payment_method || 'mpesa'),
-        payment.status || '',
-        payment.timestamp ? formatDate(payment.timestamp) : '',
-      ]),
-    ];
-
-    const csv = rows
-      .map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(','))
-      .join('\n');
-
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    const safeName = student.name.replace(/[^a-z0-9]+/gi, '-').replace(/^-+|-+$/g, '').toLowerCase() || 'student';
-    link.href = url;
-    link.download = `${safeName}-report.csv`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
   };
 
   return (
@@ -94,15 +63,6 @@ export default function StudentReport({ studentId }) {
             onClick={() => navigateTo(`/payments?student_id=${studentId}`)}
           >
             Record payment
-          </button>
-          <button
-            type="button"
-            className="report-no-print"
-            style={{ ...s.secondaryBtn, ...(student ? {} : s.disabledBtn) }}
-            onClick={handleDownloadCsv}
-            disabled={!student}
-          >
-            Download CSV
           </button>
           <button
             type="button"

@@ -19,7 +19,7 @@ export default function Payments() {
 
   const loadPayments = async () => {
     const data = await fetchPayments();
-    setPayments(data.payments || []);
+    setPayments((data.payments || []).filter((payment) => payment.status !== 'failed'));
   };
 
   useEffect(() => {
@@ -29,7 +29,7 @@ export default function Payments() {
         setLoading(true);
         const [paymentData, studentData] = await Promise.all([fetchPayments(), getStudents()]);
         if (!mounted) return;
-        setPayments(paymentData.payments || []);
+        setPayments((paymentData.payments || []).filter((payment) => payment.status !== 'failed'));
         setStudents(studentData.students || []);
         const params = new URLSearchParams(window.location.search);
         const studentId = params.get('student_id');

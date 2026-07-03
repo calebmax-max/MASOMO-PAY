@@ -54,6 +54,7 @@ def student_report(student_id):
                     "timestamp": payment.timestamp.isoformat() if payment.timestamp else None,
                 }
                 for payment in payments
+                if payment.status != "failed"
             ],
         }
     )

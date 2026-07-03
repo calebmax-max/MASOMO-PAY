@@ -1,13 +1,26 @@
+html,
+body,
+#root {
+  min-height: 100%;
+  margin: 0;
+  background: #0f1117;
+}
+
 .App {
   min-height: 100vh;
+  background: #0f1117;
 }
 
 .auth-shell {
   min-height: 100vh;
   display: grid;
   place-items: center;
-  background: linear-gradient(180deg, #f3f7ff 0%, #ffffff 100%);
+  background:
+    radial-gradient(circle at top left, rgba(123, 184, 244, 0.14), transparent 28%),
+    radial-gradient(circle at top right, rgba(29, 78, 216, 0.08), transparent 24%),
+    #0f1117;
   padding: 24px;
+  color: #f0f0f2;
 }
 
 .auth-card {
@@ -24,7 +37,11 @@
 
 .dashboard-shell {
   min-height: 100vh;
-  background: #f5f7fb;
+  background:
+    radial-gradient(circle at top left, rgba(123, 184, 244, 0.12), transparent 28%),
+    radial-gradient(circle at top right, rgba(29, 78, 216, 0.08), transparent 24%),
+    #0f1117;
+  color: #f0f0f2;
 }
 
 .portal-shell {
@@ -127,8 +144,8 @@
 }
 
 .sidebar {
-  background: white;
-  border-right: 1px solid #e5e7eb;
+  background: #161820;
+  border-right: 1px solid #2a2a38;
   padding: 20px 14px;
 }
 
@@ -191,10 +208,11 @@
 }
 
 .card {
-  background: white;
+  background: #161820;
+  color: #f0f0f2;
   border-radius: 20px;
   padding: 20px;
-  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.22);
 }
 
 .portal-card {
@@ -345,6 +363,16 @@
   color: #991b1b;
 }
 
+.status-failed {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.status-duplicate {
+  background: #e0e7ff;
+  color: #3730a3;
+}
+
 .portal-status-completed {
   background: rgba(22, 101, 52, 0.18);
   color: #86efac;
@@ -358,6 +386,16 @@
 .portal-status-unmatched {
   background: rgba(153, 27, 27, 0.22);
   color: #fca5a5;
+}
+
+.portal-status-failed {
+  background: rgba(153, 27, 27, 0.22);
+  color: #fca5a5;
+}
+
+.portal-status-duplicate {
+  background: rgba(55, 48, 163, 0.18);
+  color: #c7d2fe;
 }
 
 .muted,

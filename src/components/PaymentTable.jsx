@@ -26,7 +26,7 @@ export default function PaymentTable({ payments = [] }) {
               <td>{formatCurrency(payment.amount)}</td>
               <td>{payment.payment_method === 'manual' ? 'cash' : 'mpesa'}</td>
               <td>
-                <span className={`status-pill status-${payment.status}`}>{payment.status}</span>
+                <span className={`status-pill status-${payment.status}`}>{getStatusLabel(payment.status)}</span>
               </td>
               <td>{formatDate(payment.timestamp)}</td>
               <td>{payment.mpesa_code || '-'}</td>
@@ -43,4 +43,21 @@ export default function PaymentTable({ payments = [] }) {
       </table>
     </div>
   );
+}
+
+function getStatusLabel(status) {
+  switch (status) {
+    case 'completed':
+      return 'Successful';
+    case 'pending':
+      return 'Pending';
+    case 'failed':
+      return 'Failed';
+    case 'unmatched':
+      return 'Unmatched';
+    case 'duplicate':
+      return 'Duplicate';
+    default:
+      return status || 'Unknown';
+  }
 }
