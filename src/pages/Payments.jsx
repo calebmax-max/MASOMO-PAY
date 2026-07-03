@@ -1,45 +1,72 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import PaymentTable from '../components/PaymentTable';
 import { createManualPayment, fetchPayments } from '../services/paymentService';
-import { getStudents } from '../services/studentService';
+import { getStudent, getStudents } from '../services/studentService';
 import { calculateBalance, formatCurrency } from '../utils/helpers';
 
 const initialForm = { student_id: '', amount: '' };
+const PAYMENTS_CACHE_KEY = 'masomo_payments_cache_v1';
+
+function readPaymentsCache() {
+  try {
+    const raw = localStorage.getItem(PAYMENTS_CACHE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === 'object' ? parsed : null;
+  } catch (error) {
+    return null;
+  }
+}
+
+function writePaymentsCache(payload) {
+  try {
+    localStorage.setItem(PAYMENTS_CACHE_KEY, JSON.stringify(payload));
+  } catch (error) {
+    // Ignore cache write failures.
+  }
+}
 
 export default function Payments() {
-  const [payments, setPayments] = useState([]);
-  const [students, setStudents] = useState([]);
+  const cached = readPaymentsCache();
+  const [payments, setPayments] = useState(cached?.payments || []);
   const [form, setForm] = useState(initialForm);
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [studentSearch, setStudentSearch] = useState('');
+  const [studentResults, setStudentResults] = useState([]);
+  const [studentSearchLoading, setStudentSearchLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!cached);
   const [savingManual, setSavingManual] = useState(false);
 
   const loadPayments = async () => {
     const data = await fetchPayments();
-    setPayments((data.payments || []).filter((payment) => payment.status !== 'failed'));
+    const nextPayments = (data.payments || []).filter((payment) => payment.status === 'completed');
+    setPayments(nextPayments);
+    writePaymentsCache({ payments: nextPayments });
+    return nextPayments;
   };
 
   useEffect(() => {
     let mounted = true;
+
     async function loadPage() {
       try {
         setLoading(true);
-        const [paymentData, studentData] = await Promise.all([fetchPayments(), getStudents()]);
+        const paymentData = await fetchPayments();
         if (!mounted) return;
-        setPayments((paymentData.payments || []).filter((payment) => payment.status !== 'failed'));
-        setStudents(studentData.students || []);
+        const nextPayments = (paymentData.payments || []).filter((payment) => payment.status === 'completed');
+        setPayments(nextPayments);
+        writePaymentsCache({ payments: nextPayments });
+
         const params = new URLSearchParams(window.location.search);
         const studentId = params.get('student_id');
         if (studentId) {
-          const student = (studentData.students || []).find((item) => String(item.id) === String(studentId));
-          if (student) {
-            setForm((c) => ({ ...c, student_id: String(student.id) }));
-            setSelectedStudent(student);
-            setStudentSearch(`${student.name} - ${student.admission_no}`);
-          }
+          const data = await getStudent(studentId);
+          if (!mounted || !data.student) return;
+          setSelectedStudent(data.student);
+          setForm((current) => ({ ...current, student_id: String(data.student.id) }));
+          setStudentSearch(`${data.student.name} - ${data.student.admission_no}`);
         }
       } catch (err) {
         if (mounted) setError(err.message || 'Could not load payments');
@@ -47,35 +74,74 @@ export default function Payments() {
         if (mounted) setLoading(false);
       }
     }
+
     loadPage();
-    return () => { mounted = false; };
+    return () => {
+      mounted = false;
+    };
   }, []);
 
-  const resetFeedback = () => { setMessage(''); setError(''); };
+  useEffect(() => {
+    let mounted = true;
+    const term = studentSearch.trim();
 
-  const filteredStudents = useMemo(() => {
-    const term = studentSearch.trim().toLowerCase();
-    if (!term) return students;
-    return students.filter((s) =>
-      [s.name, s.admission_no, s.class_name].filter(Boolean).join(' ').toLowerCase().includes(term)
-    );
-  }, [studentSearch, students]);
+    if (!term || term.length < 2) {
+      setStudentResults([]);
+      setStudentSearchLoading(false);
+      return () => {
+        mounted = false;
+      };
+    }
+
+    setStudentSearchLoading(true);
+    const timer = setTimeout(async () => {
+      try {
+        const data = await getStudents(term);
+        if (mounted) {
+          setStudentResults(data.students || []);
+        }
+      } catch (err) {
+        if (mounted) {
+          setStudentResults([]);
+        }
+      } finally {
+        if (mounted) {
+          setStudentSearchLoading(false);
+        }
+      }
+    }, 250);
+
+    return () => {
+      mounted = false;
+      clearTimeout(timer);
+    };
+  }, [studentSearch]);
+
+  const resetFeedback = () => {
+    setMessage('');
+    setError('');
+  };
 
   const selectStudent = (student) => {
     setSelectedStudent(student);
-    setForm((c) => ({ ...c, student_id: String(student.id) }));
+    setForm((current) => ({ ...current, student_id: String(student.id) }));
     setStudentSearch(`${student.name} - ${student.admission_no}`);
+    setStudentResults([]);
   };
 
   const submitManualPayment = async (event) => {
     event.preventDefault();
     resetFeedback();
-    if (!form.student_id || !form.amount) { setError('Select a student and enter an amount.'); return; }
+    if (!form.student_id || !form.amount) {
+      setError('Select a student and enter an amount.');
+      return;
+    }
+
     setSavingManual(true);
     try {
       await createManualPayment({ student_id: Number(form.student_id), amount: Number(form.amount) });
       setMessage('Manual payment saved.');
-      setForm((c) => ({ ...c, amount: '' }));
+      setForm((current) => ({ ...current, amount: '' }));
       await loadPayments();
     } catch (err) {
       setError(err.message || 'Could not save manual payment');
@@ -86,16 +152,13 @@ export default function Payments() {
 
   return (
     <section style={s.shell}>
-
-      {/* ── Header ── */}
       <div style={s.topbar}>
         <div>
           <h1 style={s.pgTitle}>Payments</h1>
-          <p style={s.pgSub}>Record a payment and keep the fee ledger updated.</p>
+          <p style={s.pgSub}>Manage payment records.</p>
         </div>
       </div>
 
-      {/* ── Record payment form ── */}
       <form style={s.card} onSubmit={submitManualPayment}>
         <p style={s.cardTitle}>Record payment</p>
 
@@ -106,19 +169,20 @@ export default function Payments() {
             value={studentSearch}
             onChange={(e) => {
               setStudentSearch(e.target.value);
-              const exact = students.find(
-                (st) => `${st.name} - ${st.admission_no}`.toLowerCase() === e.target.value.trim().toLowerCase()
-              );
-              if (!e.target.value) { setSelectedStudent(null); setForm((c) => ({ ...c, student_id: '' })); }
-              else if (exact) selectStudent(exact);
+              if (!e.target.value) {
+                setSelectedStudent(null);
+                setForm((current) => ({ ...current, student_id: '' }));
+              }
             }}
-            placeholder="Type a name or admission number"
+            placeholder="Search name or admission"
           />
         </label>
 
-        {filteredStudents.length > 0 && (
+        {studentSearchLoading ? <p style={s.muted}>Searching students...</p> : null}
+
+        {studentResults.length > 0 && (
           <div style={s.searchResults}>
-            {filteredStudents.slice(0, 8).map((student) => (
+            {studentResults.slice(0, 8).map((student) => (
               <button
                 key={student.id}
                 type="button"
@@ -136,7 +200,8 @@ export default function Payments() {
             ))}
           </div>
         )}
-        {!filteredStudents.length && studentSearch ? (
+
+        {!studentResults.length && studentSearch.trim().length >= 2 && !studentSearchLoading ? (
           <p style={s.muted}>No matching students found.</p>
         ) : null}
 
@@ -158,8 +223,18 @@ export default function Payments() {
           </div>
         )}
 
-        {error && <div style={s.errorBanner}><AlertIcon />{error}</div>}
-        {message && <div style={s.successBanner}><CheckIcon />{message}</div>}
+        {error && (
+          <div style={s.errorBanner}>
+            <AlertIcon />
+            {error}
+          </div>
+        )}
+        {message && (
+          <div style={s.successBanner}>
+            <CheckIcon />
+            {message}
+          </div>
+        )}
 
         <div style={s.btnRow}>
           <button
@@ -169,29 +244,30 @@ export default function Payments() {
             onMouseEnter={(e) => !savingManual && (e.currentTarget.style.background = '#1A3D5C')}
             onMouseLeave={(e) => !savingManual && (e.currentTarget.style.background = '#1A2F4A')}
           >
-            {savingManual ? 'Saving…' : 'Save payment'}
+            {savingManual ? 'Saving...' : 'Save payment'}
           </button>
         </div>
       </form>
 
-      {/* ── History ── */}
       <div style={s.card}>
         <p style={s.cardTitle}>Payment history</p>
-        {loading ? <p style={s.muted}>Loading payment history…</p> : <PaymentTable payments={payments} />}
+        {loading ? <p style={s.muted}>Loading payment history...</p> : <PaymentTable payments={payments} />}
       </div>
     </section>
   );
 }
 
-/* ─── Icons ─────────────────────────────────────────────────── */
 const ico = { width: 15, height: 15, display: 'block', flexShrink: 0 };
+
 function AlertIcon() {
   return (
     <svg style={{ ...ico, flexShrink: 0 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="10" /><path d="M12 8v4M12 16h.01" />
+      <circle cx="12" cy="12" r="10" />
+      <path d="M12 8v4M12 16h.01" />
     </svg>
   );
 }
+
 function CheckIcon() {
   return (
     <svg style={{ ...ico, flexShrink: 0 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
@@ -200,7 +276,6 @@ function CheckIcon() {
   );
 }
 
-/* ─── Styles ─────────────────────────────────────────────────── */
 const s = {
   shell: {
     padding: '1.5rem',

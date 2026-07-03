@@ -141,7 +141,7 @@ export default function PortalDashboard() {
       <div className="page-header">
         <div>
           <h1>My Account</h1>
-          <p>See your balance, payment history, and submit fee payments securely.</p>
+          <p>View balance and payment history.</p>
         </div>
       </div>
 
@@ -169,7 +169,7 @@ export default function PortalDashboard() {
 
           <div className="portal-card portal-form">
             <h2>Pay Fees</h2>
-            <p className="portal-help">Enter the amount you want to pay and the phone number that will receive the payment prompt.</p>
+            <p className="portal-help">Enter amount and phone number.</p>
 
             <form className="portal-form" onSubmit={submitPayment}>
               <label>
@@ -179,7 +179,7 @@ export default function PortalDashboard() {
                   type="number"
                   value={form.amount}
                   onChange={(event) => setForm({ ...form, amount: event.target.value })}
-                  placeholder="Enter amount"
+                  placeholder="Amount"
                 />
               </label>
               <label>
@@ -188,7 +188,7 @@ export default function PortalDashboard() {
                   className="portal-input"
                   value={form.phone_number}
                   onChange={(event) => setForm({ ...form, phone_number: event.target.value })}
-                  placeholder="07..."
+                  placeholder="Phone number"
                 />
               </label>
               <div className="button-row">

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { apiRequest } from '../services/api';
+import { downloadReportBundle } from '../services/reportService';
 import { formatCurrency } from '../utils/helpers';
 
 const REPORT_CARDS = [
@@ -16,6 +17,7 @@ function formatVal(key, value) {
 export default function Reports() {
   const [summary, setSummary] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [downloading, setDownloading] = useState(false);
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -27,6 +29,18 @@ export default function Reports() {
     return () => { mounted = false; };
   }, []);
 
+  const handleDownload = async () => {
+    setDownloading(true);
+    setError('');
+    try {
+      await downloadReportBundle();
+    } catch (err) {
+      setError(err.message || 'Could not download report bundle');
+    } finally {
+      setDownloading(false);
+    }
+  };
+
   return (
     <section style={s.shell}>
 
@@ -36,6 +50,16 @@ export default function Reports() {
           <h1 style={s.pgTitle}>Reports</h1>
           <p style={s.pgSub}>Fee summaries, balances, and collections.</p>
         </div>
+        <button
+          type="button"
+          style={s.downloadBtn}
+          onClick={handleDownload}
+          disabled={downloading || loading}
+          onMouseEnter={(e) => !(downloading || loading) && (e.currentTarget.style.background = '#1A3D5C')}
+          onMouseLeave={(e) => !(downloading || loading) && (e.currentTarget.style.background = '#1A2F4A')}
+        >
+          {downloading ? 'Preparing download...' : 'Download reports'}
+        </button>
       </div>
 
       {error && (
@@ -130,6 +154,21 @@ const s = {
     color: '#7A7A8C',
     marginTop: 3,
     marginBottom: 0,
+  },
+  downloadBtn: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: 6,
+    padding: '9px 16px',
+    borderRadius: 8,
+    border: '0.5px solid #2A2A38',
+    background: '#1A2F4A',
+    color: '#7BB8F4',
+    fontSize: 13,
+    fontWeight: 500,
+    cursor: 'pointer',
+    transition: 'background 0.15s',
+    whiteSpace: 'nowrap',
   },
   errorBanner: {
     display: 'flex',
