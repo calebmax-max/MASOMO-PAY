@@ -21,6 +21,10 @@ except ImportError:
 payments_bp = Blueprint("payments", __name__)
 
 
+def _display_payment_method(payment_method):
+    return "cash" if payment_method == "manual" else "mpesa"
+
+
 def serialize_payment(payment):
     return {
         "id": payment.id,
@@ -28,7 +32,7 @@ def serialize_payment(payment):
         "student_name": payment.student.name if payment.student else None,
         "student_admission_no": payment.student.admission_no if payment.student else None,
         "amount": float(payment.amount or 0),
-        "payment_method": payment.payment_method,
+        "payment_method": _display_payment_method(payment.payment_method),
         "mpesa_code": payment.mpesa_code,
         "status": payment.status,
         "timestamp": payment.timestamp.isoformat() if payment.timestamp else None,
@@ -88,7 +92,7 @@ def stk_push():
         student_id=student.id,
         school_id=student.school_id,
         amount=payload["amount"],
-        payment_method="daraja_stkpush",
+        payment_method="mpesa",
         gateway_reference=checkout_request_id,
         mpesa_code=None,
         status="pending",

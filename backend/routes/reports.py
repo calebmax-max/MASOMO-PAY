@@ -12,6 +12,10 @@ except ImportError:
 reports_bp = Blueprint("reports", __name__)
 
 
+def _display_payment_method(payment_method):
+    return "cash" if payment_method == "manual" else "mpesa"
+
+
 @reports_bp.get("/summary")
 @role_required("admin", "accountant")
 def summary():
@@ -45,7 +49,7 @@ def student_report(student_id):
                 {
                     "id": payment.id,
                     "amount": float(payment.amount or 0),
-                    "payment_method": payment.payment_method,
+                    "payment_method": _display_payment_method(payment.payment_method),
                     "status": payment.status,
                     "timestamp": payment.timestamp.isoformat() if payment.timestamp else None,
                 }

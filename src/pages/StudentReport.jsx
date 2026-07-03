@@ -49,7 +49,7 @@ export default function StudentReport({ studentId }) {
       ['Amount', 'Method', 'Status', 'Date'],
       ...payments.map((payment) => [
         String(payment.amount ?? ''),
-        payment.payment_method || '',
+        payment.payment_method === 'manual' ? 'cash' : (payment.payment_method || 'mpesa'),
         payment.status || '',
         payment.timestamp ? formatDate(payment.timestamp) : '',
       ]),
@@ -168,7 +168,7 @@ export default function StudentReport({ studentId }) {
                     {payments.map((payment) => (
                       <tr key={payment.id}>
                         <td>{formatCurrency(payment.amount)}</td>
-                        <td>{payment.payment_method || '-'}</td>
+                        <td>{payment.payment_method === 'manual' ? 'cash' : (payment.payment_method || 'mpesa')}</td>
                         <td>
                           <span
                             className="report-status"

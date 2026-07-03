@@ -177,7 +177,7 @@ function PaymentRow({ name, avatarBg, avatarFg, method, amount }) {
       <div style={{ ...s.av, background: avatarBg, color: avatarFg }}>{getInitials(name)}</div>
       <div style={s.pinfo}>
         <p style={s.pname}>{name}</p>
-        {method && <p style={s.pmeta}>{method}</p>}
+        {method && <p style={s.pmeta}>{method === 'manual' ? 'cash' : 'mpesa'}</p>}
       </div>
       <span style={s.pamt}>{amount}</span>
       <span style={s.statusBadge}>Paid</span>

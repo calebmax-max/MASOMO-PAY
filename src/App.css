@@ -277,6 +277,8 @@
 .table {
   width: 100%;
   border-collapse: collapse;
+  background: #161820;
+  color: #f0f0f2;
 }
 
 .portal-table {
@@ -304,8 +306,20 @@
 .table th,
 .table td {
   padding: 12px 10px;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid #2a2a38;
   text-align: left;
+}
+
+.table th {
+  color: #7a7a8c;
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.02);
 }
 
 .status-pill {

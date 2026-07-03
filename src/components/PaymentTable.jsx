@@ -19,10 +19,12 @@ export default function PaymentTable({ payments = [] }) {
           {payments.map((payment) => (
             <tr key={payment.id}>
               <td>
-                {payment.student_name || payment.student_admission_no || payment.student_id || '-'}
+                {payment.student_name
+                  ? `${payment.student_name}${payment.student_admission_no ? ` (${payment.student_admission_no})` : ''}`
+                  : payment.student_admission_no || payment.student_id || '-'}
               </td>
               <td>{formatCurrency(payment.amount)}</td>
-              <td>{payment.payment_method}</td>
+              <td>{payment.payment_method === 'manual' ? 'cash' : 'mpesa'}</td>
               <td>
                 <span className={`status-pill status-${payment.status}`}>{payment.status}</span>
               </td>

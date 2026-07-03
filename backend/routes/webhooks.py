@@ -8,6 +8,10 @@ except ImportError:
 webhooks_bp = Blueprint("webhooks", __name__)
 
 
+def _display_payment_method(payment_method):
+    return "mpesa"
+
+
 def _flatten_daraja_callback(payload):
     body = payload.get("Body") or {}
     stk_callback = body.get("stkCallback") or {}
@@ -29,7 +33,7 @@ def _flatten_daraja_callback(payload):
         "amount": metadata.get("Amount"),
         "phone_number": metadata.get("PhoneNumber"),
         "admission_no": metadata.get("AccountReference"),
-        "payment_method": "daraja_webhook",
+        "payment_method": _display_payment_method("daraja_webhook"),
     }
 
 

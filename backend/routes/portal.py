@@ -20,6 +20,10 @@ except ImportError:
 portal_bp = Blueprint("portal", __name__)
 
 
+def _display_payment_method(payment_method):
+    return "cash" if payment_method == "manual" else "mpesa"
+
+
 def serialize_student_portal(student):
     return {
         "id": student.id,
@@ -37,7 +41,7 @@ def serialize_payment(payment):
         "id": payment.id,
         "student_id": payment.student_id,
         "amount": float(payment.amount or 0),
-        "payment_method": payment.payment_method,
+        "payment_method": _display_payment_method(payment.payment_method),
         "mpesa_code": payment.mpesa_code,
         "status": payment.status,
         "timestamp": payment.timestamp.isoformat() if payment.timestamp else None,
@@ -122,7 +126,7 @@ def pay_fees():
         student_id=student.id,
         school_id=student.school_id,
         amount=payload["amount"],
-        payment_method="portal_daraja_stkpush",
+        payment_method="mpesa",
         gateway_reference=checkout_request_id,
         mpesa_code=None,
         status="pending",
