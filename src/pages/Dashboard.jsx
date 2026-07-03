@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { fetchPayments } from '../services/paymentService';
 import { apiRequest } from '../services/api';
-import { getStudents } from '../services/studentService';
 import { formatCurrency } from '../utils/helpers';
 import { navigateTo } from '../utils/navigation';
 
@@ -19,6 +18,28 @@ const METRIC_ACCENTS = {
   amber: { bar: '#EF9F27', iconBg: '#2A1F08', iconFg: '#EF9F27', valColor: '#EF9F27' },
 };
 
+const DASHBOARD_CACHE_KEY = 'masomo_dashboard_cache_v1';
+
+function readDashboardCache() {
+  try {
+    const raw = localStorage.getItem(DASHBOARD_CACHE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed !== 'object') return null;
+    return parsed;
+  } catch (error) {
+    return null;
+  }
+}
+
+function writeDashboardCache(payload) {
+  try {
+    localStorage.setItem(DASHBOARD_CACHE_KEY, JSON.stringify(payload));
+  } catch (error) {
+    // Ignore cache write failures.
+  }
+}
+
 function getInitials(name) {
   if (!name) return '?';
   return name.trim().split(/\s+/).slice(0, 2).map((w) => w[0].toUpperCase()).join('');
@@ -32,24 +53,30 @@ function formatShort(value) {
 }
 
 export default function Dashboard() {
-  const [summary, setSummary] = useState({ total_students: 0, total_collections: 0, total_balances: 0 });
-  const [payments, setPayments] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const cached = readDashboardCache();
+  const [summary, setSummary] = useState(cached?.summary || { total_students: 0, total_collections: 0, total_balances: 0 });
+  const [payments, setPayments] = useState(cached?.payments || []);
+  const [loading, setLoading] = useState(!cached);
   const [error, setError] = useState('');
 
   useEffect(() => {
     let mounted = true;
     async function loadDashboard() {
       try {
-        setLoading(true);
-        const [summaryData, paymentData, studentData] = await Promise.all([
+        const [summaryData, paymentData] = await Promise.all([
           apiRequest('/api/reports/summary'),
           fetchPayments(),
-          getStudents(),
         ]);
         if (!mounted) return;
-        setSummary({ ...summaryData, total_students: studentData.students?.length || 0 });
-        setPayments((paymentData.payments || []).filter((payment) => payment.status === 'completed').slice(0, 5));
+        const nextSummary = {
+          total_students: summaryData.total_students || 0,
+          total_collections: summaryData.total_collections || 0,
+          total_balances: summaryData.total_balances || 0,
+        };
+        const nextPayments = (paymentData.payments || []).filter((payment) => payment.status === 'completed').slice(0, 5);
+        setSummary(nextSummary);
+        setPayments(nextPayments);
+        writeDashboardCache({ summary: nextSummary, payments: nextPayments });
       } catch (err) {
         if (mounted) setError(err.message || 'Could not load dashboard');
       } finally {

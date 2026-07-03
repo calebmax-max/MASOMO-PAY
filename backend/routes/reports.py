@@ -1,10 +1,13 @@
 from flask import Blueprint, jsonify
+from sqlalchemy import func
 
 try:
+    from ..database.db import db
     from ..middleware.auth_middleware import role_required
     from ..models.payment import Payment
     from ..models.student import Student
 except ImportError:
+    from database.db import db
     from middleware.auth_middleware import role_required
     from models.payment import Payment
     from models.student import Student
@@ -19,14 +22,14 @@ def _display_payment_method(payment_method):
 @reports_bp.get("/summary")
 @role_required("admin", "accountant")
 def summary():
-    total_students = Student.query.count()
-    total_collections = sum(float(payment.amount or 0) for payment in Payment.query.filter_by(status="completed").all())
-    total_balances = sum(float(student.balance or 0) for student in Student.query.all())
+    total_students = db.session.query(func.count(Student.id)).scalar() or 0
+    total_collections = db.session.query(func.coalesce(func.sum(Payment.amount), 0)).filter(Payment.status == "completed").scalar() or 0
+    total_balances = db.session.query(func.coalesce(func.sum(Student.balance), 0)).scalar() or 0
     return jsonify(
         {
             "total_students": total_students,
-            "total_collections": total_collections,
-            "total_balances": total_balances,
+            "total_collections": float(total_collections),
+            "total_balances": float(total_balances),
         }
     )
 

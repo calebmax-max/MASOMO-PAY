@@ -1,23 +1,36 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { Suspense, lazy, useEffect, useMemo, useState } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { PortalAuthProvider } from './context/PortalAuthContext';
-import DashboardLayout from './layouts/DashboardLayout';
-import PortalLayout from './layouts/PortalLayout';
 import ProtectedRoute from './components/ProtectedRoute';
 import PortalProtectedRoute from './components/PortalProtectedRoute';
 import Login from './pages/Login';
 import PortalLogin from './pages/PortalLogin';
-import Dashboard from './pages/Dashboard';
-import Students from './pages/Students';
-import AddStudent from './pages/AddStudent';
-import EditStudent from './pages/EditStudent';
-import StudentReport from './pages/StudentReport';
-import Payments from './pages/Payments';
-import Reports from './pages/Reports';
-import Settings from './pages/Settings';
-import PortalDashboard from './pages/PortalDashboard';
 import { navigateTo } from './utils/navigation';
 import './App.css';
+
+const DashboardLayout = lazy(() => import('./layouts/DashboardLayout'));
+const PortalLayout = lazy(() => import('./layouts/PortalLayout'));
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const Students = lazy(() => import('./pages/Students'));
+const AddStudent = lazy(() => import('./pages/AddStudent'));
+const EditStudent = lazy(() => import('./pages/EditStudent'));
+const StudentReport = lazy(() => import('./pages/StudentReport'));
+const Payments = lazy(() => import('./pages/Payments'));
+const Reports = lazy(() => import('./pages/Reports'));
+const Settings = lazy(() => import('./pages/Settings'));
+const PortalDashboard = lazy(() => import('./pages/PortalDashboard'));
+
+function RouteLoading({ label }) {
+  return (
+    <div className="page-shell center" style={{ minHeight: '60vh' }}>
+      <div className="portal-card" style={{ width: 'min(420px, calc(100% - 32px))', textAlign: 'center' }}>
+        <p className="portal-muted" style={{ margin: 0, fontSize: 14 }}>
+          {label}
+        </p>
+      </div>
+    </div>
+  );
+}
 
 function AppShell() {
   const { token } = useAuth();
@@ -69,16 +82,20 @@ function AppShell() {
       return page;
     }
     return (
-      <PortalProtectedRoute>
-        <PortalLayout>{page}</PortalLayout>
-      </PortalProtectedRoute>
+      <Suspense fallback={<RouteLoading label="Loading portal..." />}>
+        <PortalProtectedRoute>
+          <PortalLayout>{page}</PortalLayout>
+        </PortalProtectedRoute>
+      </Suspense>
     );
   }
 
   return (
-    <ProtectedRoute>
-      <DashboardLayout>{page}</DashboardLayout>
-    </ProtectedRoute>
+    <Suspense fallback={<RouteLoading label="Loading dashboard..." />}>
+      <ProtectedRoute>
+        <DashboardLayout>{page}</DashboardLayout>
+      </ProtectedRoute>
+    </Suspense>
   );
 }
 

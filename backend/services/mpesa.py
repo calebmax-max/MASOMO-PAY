@@ -1,4 +1,5 @@
 import base64
+import threading
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
@@ -7,9 +8,13 @@ from flask import current_app, has_app_context
 
 try:
     from ..config import Config
+    from ..database.db import db
+    from ..models.payment import Payment
     from ..utils.helpers import generate_reference
 except ImportError:
     from config import Config
+    from database.db import db
+    from models.payment import Payment
     from utils.helpers import generate_reference
 
 
@@ -131,3 +136,27 @@ def initiate_stk_push(phone_number, amount, account_reference, description="Scho
     )
     response.raise_for_status()
     return response.json()
+
+
+def queue_stk_push(app, payment_id, phone_number, amount, account_reference, description="School fee payment"):
+    def worker():
+        with app.app_context():
+            payment = db.session.get(Payment, payment_id)
+            if payment is None:
+                return
+
+            try:
+                response = initiate_stk_push(phone_number, amount, account_reference, description)
+                checkout_request_id = response.get("CheckoutRequestID") or response.get("checkout_request_id")
+                if checkout_request_id:
+                    payment.gateway_reference = checkout_request_id
+                if response.get("ResponseCode") not in {None, "0", 0}:
+                    payment.status = "failed"
+                db.session.commit()
+            except Exception:
+                payment.status = "failed"
+                db.session.commit()
+
+    thread = threading.Thread(target=worker, daemon=True)
+    thread.start()
+    return thread

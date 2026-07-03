@@ -1,4 +1,5 @@
 from flask import Blueprint, jsonify, request
+from flask import current_app
 from flask_jwt_extended import get_jwt_identity
 
 try:
@@ -7,6 +8,7 @@ try:
     from ..models.payment import Payment
     from ..models.student import Student
     from ..services.mpesa import initiate_stk_push
+    from ..services.mpesa import queue_stk_push
     from ..services.reconcile import reconcile_payment
     from ..utils.validators import is_valid_amount, require_fields
 except ImportError:
@@ -15,6 +17,7 @@ except ImportError:
     from models.payment import Payment
     from models.student import Student
     from services.mpesa import initiate_stk_push
+    from services.mpesa import queue_stk_push
     from services.reconcile import reconcile_payment
     from utils.validators import is_valid_amount, require_fields
 
@@ -86,18 +89,24 @@ def stk_push():
         return jsonify({"error": "validation_error", "message": "Invalid amount"}), 400
 
     student = Student.query.get_or_404(payload["student_id"])
-    response = initiate_stk_push(payload["phone_number"], payload["amount"], student.admission_no)
-    checkout_request_id = response.get("CheckoutRequestID") or response.get("checkout_request_id")
     payment = Payment(
         student_id=student.id,
         school_id=student.school_id,
         amount=payload["amount"],
         payment_method="mpesa",
-        gateway_reference=checkout_request_id,
         mpesa_code=None,
         status="pending",
         recorded_by=int(get_jwt_identity()),
     )
     db.session.add(payment)
     db.session.commit()
-    return jsonify({"payment": serialize_payment(payment), "mpesa": response}), 202
+    if current_app.config.get("TESTING"):
+        response = initiate_stk_push(payload["phone_number"], payload["amount"], student.admission_no)
+        checkout_request_id = response.get("CheckoutRequestID") or response.get("checkout_request_id")
+        if checkout_request_id:
+            payment.gateway_reference = checkout_request_id
+            db.session.commit()
+        return jsonify({"payment": serialize_payment(payment), "mpesa": response, "message": "STK push queued"}), 202
+
+    queue_stk_push(current_app._get_current_object(), payment.id, payload["phone_number"], payload["amount"], student.admission_no)
+    return jsonify({"payment": serialize_payment(payment), "message": "STK push queued"}), 202

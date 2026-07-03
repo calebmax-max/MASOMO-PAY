@@ -1,29 +1,95 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { getPortalPayments, getPortalProfile, portalPayFees } from '../services/portalService';
 import { formatCurrency, formatDate } from '../utils/helpers';
 
+const PORTAL_CACHE_KEY = 'masomo_portal_dashboard_cache_v1';
+
+function readPortalCache() {
+  try {
+    const raw = localStorage.getItem(PORTAL_CACHE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed !== 'object') return null;
+    return parsed;
+  } catch (error) {
+    return null;
+  }
+}
+
+function writePortalCache(payload) {
+  try {
+    localStorage.setItem(PORTAL_CACHE_KEY, JSON.stringify(payload));
+  } catch (error) {
+    // Ignore cache write failures.
+  }
+}
+
 export default function PortalDashboard() {
-  const [student, setStudent] = useState(null);
-  const [payments, setPayments] = useState([]);
-  const [form, setForm] = useState({ amount: '', phone_number: '' });
-  const [loading, setLoading] = useState(true);
+  const cached = readPortalCache();
+  const [student, setStudent] = useState(cached?.student || null);
+  const [payments, setPayments] = useState(cached?.payments || []);
+  const [form, setForm] = useState({ amount: cached?.amount || '', phone_number: '' });
+  const [loading, setLoading] = useState(!cached);
   const [saving, setSaving] = useState(false);
+  const [isPolling, setIsPolling] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+  const refreshTimerRef = useRef(null);
+  const refreshAttemptsRef = useRef(0);
+  const MAX_REFRESH_ATTEMPTS = 12;
+  const REFRESH_INTERVAL_MS = 5000;
 
-  const loadPortal = async () => {
+  const clearRefreshTimer = useCallback(() => {
+    if (refreshTimerRef.current) {
+      clearTimeout(refreshTimerRef.current);
+      refreshTimerRef.current = null;
+    }
+  }, []);
+
+  const loadPortal = useCallback(async () => {
     const [profileData, paymentData] = await Promise.all([getPortalProfile(), getPortalPayments()]);
-    setStudent(profileData.student);
-    setPayments(paymentData.payments || []);
-    setForm((current) => ({ ...current, amount: profileData.student?.balance ? String(profileData.student.balance) : '' }));
-  };
+    const nextStudent = profileData.student;
+    const nextPayments = paymentData.payments || [];
+    const nextAmount = profileData.student?.balance ? String(profileData.student.balance) : '';
+    setStudent(nextStudent);
+    setPayments(nextPayments);
+    setForm((current) => ({ ...current, amount: nextAmount }));
+    setIsPolling(nextPayments.some((payment) => payment.status === 'pending'));
+    writePortalCache({ student: nextStudent, payments: nextPayments, amount: nextAmount });
+    return nextPayments;
+  }, []);
+
+  const scheduleRefresh = useCallback((attempt = 0) => {
+    clearRefreshTimer();
+    if (attempt >= MAX_REFRESH_ATTEMPTS) {
+      return;
+    }
+    refreshAttemptsRef.current = attempt;
+    refreshTimerRef.current = setTimeout(async () => {
+      try {
+        const nextPayments = await loadPortal();
+        const stillPending = nextPayments.some((payment) => payment.status === 'pending');
+        if (stillPending) {
+          scheduleRefresh(attempt + 1);
+        } else {
+          clearRefreshTimer();
+        }
+      } catch (err) {
+        scheduleRefresh(attempt + 1);
+      }
+    }, REFRESH_INTERVAL_MS);
+    setIsPolling(true);
+  }, [clearRefreshTimer, loadPortal]);
 
   useEffect(() => {
     let mounted = true;
     async function load() {
       try {
         setLoading(true);
-        await loadPortal();
+        const nextPayments = await loadPortal();
+        if (mounted && nextPayments.some((payment) => payment.status === 'pending')) {
+          scheduleRefresh(0);
+        }
       } catch (err) {
         if (mounted) {
           setError(err.message || 'Could not load portal');
@@ -37,8 +103,9 @@ export default function PortalDashboard() {
     load();
     return () => {
       mounted = false;
+      clearRefreshTimer();
     };
-  }, []);
+  }, [clearRefreshTimer, loadPortal, scheduleRefresh]);
 
   const recentPayments = useMemo(() => payments.slice(0, 8), [payments]);
 
@@ -52,12 +119,16 @@ export default function PortalDashboard() {
     }
     setSaving(true);
     try {
-      await portalPayFees({
+      const response = await portalPayFees({
         amount: Number(form.amount),
         phone_number: form.phone_number,
       });
-      setMessage('Payment request sent successfully.');
-      await loadPortal();
+      if (response.payment) {
+        setPayments((current) => [response.payment, ...current.filter((item) => item.id !== response.payment.id)]);
+      }
+      setMessage(response.message || 'Payment request sent successfully.');
+      setIsPolling(true);
+      scheduleRefresh(0);
     } catch (err) {
       setError(err.message || 'Could not start payment');
     } finally {
@@ -122,7 +193,7 @@ export default function PortalDashboard() {
               </label>
               <div className="button-row">
                 <button type="submit" className="portal-primary-btn" disabled={saving}>
-                  {saving ? 'Sending...' : 'Submit Payment'}
+                  {saving ? 'Sending STK...' : 'Submit Payment'}
                 </button>
               </div>
             </form>
@@ -150,7 +221,9 @@ export default function PortalDashboard() {
                         <td>{formatCurrency(payment.amount)}</td>
                         <td>{payment.payment_method}</td>
                         <td>
-                          <span className={`status-pill portal-status-${payment.status}`}>{getStatusLabel(payment.status)}</span>
+                          <span className={`status-pill portal-status-${payment.status}`}>
+                            {getStatusLabel(payment.status, payment.status === 'pending' && isPolling)}
+                          </span>
                         </td>
                         <td>{formatDate(payment.timestamp)}</td>
                         <td>{payment.mpesa_code || '-'}</td>
@@ -171,7 +244,10 @@ export default function PortalDashboard() {
   );
 }
 
-function getStatusLabel(status) {
+function getStatusLabel(status, isChecking = false) {
+  if (status === 'pending' && isChecking) {
+    return 'Checking...';
+  }
   switch (status) {
     case 'completed':
       return 'Successful';

@@ -67,6 +67,15 @@ def reconcile_payment(payload):
         existing_payment = Payment.query.filter_by(gateway_reference=gateway_reference).first()
     if existing_payment is None and mpesa_code:
         existing_payment = Payment.query.filter_by(mpesa_code=mpesa_code).first()
+    if existing_payment is None and payment_is_successful:
+        pending_query = Payment.query.filter_by(status="pending")
+        if student_id:
+            pending_query = pending_query.filter_by(student_id=student_id)
+        elif admission_no:
+            pending_query = pending_query.join(Student, Payment.student_id == Student.id).filter(Student.admission_no == admission_no)
+        if amount:
+            pending_query = pending_query.filter(Payment.amount == amount)
+        existing_payment = pending_query.order_by(Payment.timestamp.desc()).first()
 
     if existing_payment:
         if existing_payment.status != "pending":
