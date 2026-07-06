@@ -18,7 +18,10 @@ export default function PortalLayout({ children }) {
               event.currentTarget.src = '/logo192.png';
             }}
           />
-          <span>Student Portal</span>
+          <span className="portal-brand-copy">
+            <span>Student Portal</span>
+            <small>Balance, fees, and payment history</small>
+          </span>
         </button>
         <div className="navbar-actions">
           <div className="portal-user-chip">

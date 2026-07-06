@@ -136,8 +136,8 @@ export default function AddStudent() {
             type="submit"
             style={s.submitBtn}
             disabled={loading}
-            onMouseEnter={(e) => !loading && (e.currentTarget.style.background = '#1A3D5C')}
-            onMouseLeave={(e) => !loading && (e.currentTarget.style.background = '#1A2F4A')}
+            onMouseEnter={(e) => !loading && (e.currentTarget.style.background = '#236d43')}
+            onMouseLeave={(e) => !loading && (e.currentTarget.style.background = '#1f7a4a')}
           >
             {loading ? 'Saving…' : 'Create student'}
           </button>
@@ -260,7 +260,7 @@ const s = {
   showBtn: {
     border: '0',
     background: 'transparent',
-    color: '#7BB8F4',
+    color: '#93d48e',
     fontSize: 12,
     fontWeight: 600,
     cursor: 'pointer',
@@ -305,8 +305,8 @@ const s = {
     padding: '9px 20px',
     borderRadius: 8,
     border: '0.5px solid #2A2A38',
-    background: '#1A2F4A',
-    color: '#7BB8F4',
+    background: '#1f7a4a',
+    color: '#dff5e5',
     fontSize: 13,
     fontWeight: 500,
     cursor: 'pointer',

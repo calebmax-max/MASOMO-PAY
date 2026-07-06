@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { getStudentReport } from '../services/reportService';
+import { downloadStudentReport, getStudentReport } from '../services/reportService';
 import { formatCurrency, formatDate } from '../utils/helpers';
 import { navigateTo } from '../utils/navigation';
 
@@ -31,13 +31,18 @@ export default function StudentReport({ studentId }) {
   }, [studentId]);
 
   const payments = useMemo(
-    () => (report?.payments || []).filter((payment) => payment.status !== 'failed'),
+    () => (report?.payments || []).filter((payment) => payment.status === 'completed'),
     [report]
   );
   const student = report?.student || null;
 
-  const handlePrint = () => {
-    window.print();
+  const handleDownload = async () => {
+    if (!student) return;
+    try {
+      await downloadStudentReport(student.id);
+    } catch (err) {
+      setError(err.message || 'Could not download student record');
+    }
   };
 
   return (
@@ -68,10 +73,10 @@ export default function StudentReport({ studentId }) {
             type="button"
             className="report-no-print"
             style={{ ...s.secondaryBtn, ...(student ? {} : s.disabledBtn) }}
-            onClick={handlePrint}
+            onClick={handleDownload}
             disabled={!student}
           >
-            Print report
+            Download record
           </button>
         </div>
       </div>
@@ -100,7 +105,7 @@ export default function StudentReport({ studentId }) {
             </div>
             <div className="report-metric" style={s.metricCard}>
               <span style={s.metricLabel}>Balance</span>
-              <strong style={{ ...s.metricValue, color: '#EF9F27' }}>
+              <strong style={{ ...s.metricValue, color: '#e9b24e' }}>
                 {formatCurrency(student.balance)}
               </strong>
               <p style={s.metricSub}>Outstanding fees</p>
@@ -222,8 +227,8 @@ const s = {
     padding: '9px 16px',
     borderRadius: 8,
     border: '0.5px solid #2A2A38',
-    background: '#1A2F4A',
-    color: '#7BB8F4',
+    background: '#1f7a4a',
+    color: '#dff5e5',
     fontSize: 13,
     fontWeight: 500,
     cursor: 'pointer',
@@ -315,10 +320,10 @@ const s = {
     fontSize: 11,
     padding: '3px 10px',
     borderRadius: 999,
-    background: '#0C2A44',
-    color: '#7BB8F4',
+    background: '#10261a',
+    color: '#93d48e',
     fontWeight: 500,
-    border: '0.5px solid #1A3D5C',
+    border: '0.5px solid rgba(67, 184, 106, 0.22)',
   },
   tableWrap: {
     overflowX: 'auto',
@@ -339,11 +344,11 @@ const s = {
   },
   statusCompleted: {
     background: '#0A2A22',
-    color: '#5DCAA5',
+    color: '#93d48e',
   },
   statusPending: {
     background: '#2A1F08',
-    color: '#EF9F27',
+    color: '#e9b24e',
   },
   statusOther: {
     background: '#2A1010',

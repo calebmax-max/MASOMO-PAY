@@ -10,11 +10,13 @@ try:
     from ..middleware.auth_middleware import role_required
     from ..models.payment import Payment
     from ..models.student import Student
+    from ..services.receipts import generate_statement_pdf
 except ImportError:
     from database.db import db
     from middleware.auth_middleware import role_required
     from models.payment import Payment
     from models.student import Student
+    from services.receipts import generate_statement_pdf
 
 reports_bp = Blueprint("reports", __name__)
 
@@ -57,7 +59,7 @@ def _student_rows():
 
 
 def _payment_rows():
-    payments = Payment.query.order_by(Payment.timestamp.desc()).all()
+    payments = Payment.query.filter(Payment.status == "completed").order_by(Payment.timestamp.desc()).all()
     rows = []
     for payment in payments:
         rows.append(
@@ -149,7 +151,26 @@ def student_report(student_id):
                     "timestamp": payment.timestamp.isoformat() if payment.timestamp else None,
                 }
                 for payment in payments
-                if payment.status != "failed"
+                if payment.status == "completed"
             ],
         }
+    )
+
+
+@reports_bp.get("/student/<int:student_id>/download")
+@role_required("admin", "accountant", "staff")
+def download_student_report(student_id):
+    student = Student.query.get_or_404(student_id)
+    payments = (
+        Payment.query.filter_by(student_id=student.id)
+        .filter(Payment.status == "completed")
+        .order_by(Payment.timestamp.desc())
+        .all()
+    )
+    pdf_bytes = generate_statement_pdf(student, payments)
+    return send_file(
+        BytesIO(pdf_bytes),
+        mimetype="application/pdf",
+        as_attachment=True,
+        download_name=f"{student.admission_no or student.id}-record.pdf",
     )

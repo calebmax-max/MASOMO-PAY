@@ -51,8 +51,11 @@ def sync_legacy_schema(app):
 
     try:
         with app.app_context():
+            db.create_all()
             inspector = inspect(db.engine)
-            if "students" in inspector.get_table_names():
+            table_names = set(inspector.get_table_names())
+
+            if "students" in table_names:
                 student_columns = {column["name"] for column in inspector.get_columns("students")}
                 if "portal_pin_hash" not in student_columns:
                     db.session.execute(
@@ -62,7 +65,7 @@ def sync_legacy_schema(app):
                         )
                     )
                     db.session.commit()
-            if "payments" in inspector.get_table_names():
+            if "payments" in table_names:
                 payment_columns = {column["name"] for column in inspector.get_columns("payments")}
                 if "gateway_reference" not in payment_columns:
                     db.session.execute(
@@ -72,6 +75,17 @@ def sync_legacy_schema(app):
                         )
                     )
                     db.session.commit()
+            if "fee_structures" in table_names:
+                fee_structure_columns = {column["name"] for column in inspector.get_columns("fee_structures")}
+                if "academic_term_id" not in fee_structure_columns:
+                    db.session.execute(
+                        text(
+                            "ALTER TABLE fee_structures "
+                            "ADD COLUMN academic_term_id INTEGER NULL"
+                        )
+                    )
+                    db.session.commit()
+
         app.config["SCHEMA_SYNCED"] = True
     except Exception as exc:  # pragma: no cover - defensive for local/dev DB drift
         app.logger.warning("Skipping schema sync: %s", exc)

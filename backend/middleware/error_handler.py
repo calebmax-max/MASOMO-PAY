@@ -1,6 +1,11 @@
 from flask import current_app, jsonify
 from sqlalchemy.exc import SQLAlchemyError
 
+try:
+    from ..database.db import db
+except ImportError:
+    from database.db import db
+
 
 def register_error_handlers(app):
     @app.errorhandler(404)
@@ -14,6 +19,8 @@ def register_error_handlers(app):
 
     @app.errorhandler(SQLAlchemyError)
     def handle_database_error(error):
+        db.session.rollback()
+        db.session.remove()
         current_app.logger.exception("Database request failed", exc_info=error)
         message = "Database request failed"
         if current_app.debug or current_app.testing:

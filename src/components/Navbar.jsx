@@ -37,10 +37,10 @@ export default function Navbar() {
           type="button"
           style={s.iconBtn}
           aria-label="Notifications"
-          onMouseEnter={(e) => (e.currentTarget.style.background = '#1C1E28')}
+          onMouseEnter={(e) => (e.currentTarget.style.background = '#15271d')}
           onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
         >
-          <i className="ti ti-bell" aria-hidden="true" style={{ fontSize: 18, color: '#7A7A8C' }} />
+          <i className="ti ti-bell" aria-hidden="true" style={{ fontSize: 18, color: '#93d48e' }} />
         </button>
 
         {/* Divider */}
@@ -60,7 +60,7 @@ export default function Navbar() {
           type="button"
           style={s.logoutBtn}
           onClick={logout}
-          onMouseEnter={(e) => (e.currentTarget.style.background = '#2A1010')}
+          onMouseEnter={(e) => (e.currentTarget.style.background = '#13241a')}
           onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
         >
           <i className="ti ti-logout" aria-hidden="true" style={{ fontSize: 15 }} />
@@ -79,8 +79,8 @@ const s = {
     justifyContent: 'space-between',
     height: 56,
     padding: '0 1.5rem',
-    background: '#0D0F16',
-    borderBottom: '0.5px solid #2A2A38',
+    background: 'linear-gradient(90deg, #0f172a, #111827)',
+    borderBottom: '0.5px solid rgba(67, 184, 106, 0.14)',
     fontFamily: "'DM Sans', var(--font-sans, system-ui, sans-serif)",
     flexShrink: 0,
   },
@@ -98,8 +98,8 @@ const s = {
     width: 30,
     height: 30,
     borderRadius: 7,
-    background: '#0C2A44',
-    border: '0.5px solid #1A3D5C',
+    background: '#10261a',
+    border: '0.5px solid rgba(67, 184, 106, 0.28)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -139,7 +139,7 @@ const s = {
   divider: {
     width: '0.5px',
     height: 20,
-    background: '#2A2A38',
+    background: 'rgba(67, 184, 106, 0.18)',
     margin: '0 4px',
   },
   userChip: {
@@ -148,15 +148,15 @@ const s = {
     gap: 9,
     padding: '4px 10px 4px 4px',
     borderRadius: 8,
-    border: '0.5px solid #2A2A38',
-    background: '#161820',
+    border: '0.5px solid rgba(67, 184, 106, 0.16)',
+    background: '#111827',
   },
   avatar: {
     width: 28,
     height: 28,
     borderRadius: '50%',
-    background: '#0C2A44',
-    color: '#7BB8F4',
+    background: '#10261a',
+    color: '#93d48e',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -185,7 +185,7 @@ const s = {
     gap: 6,
     padding: '7px 12px',
     borderRadius: 8,
-    border: '0.5px solid #2A2A38',
+    border: '0.5px solid rgba(67, 184, 106, 0.16)',
     background: 'transparent',
     color: '#F09595',
     fontSize: 13,

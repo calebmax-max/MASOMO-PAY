@@ -5,15 +5,15 @@ import { formatCurrency } from '../utils/helpers';
 import { navigateTo } from '../utils/navigation';
 
 const AVATAR_COLORS = [
-  { bg: '#0C2A44', fg: '#7BB8F4' },
+  { bg: '#10261a', fg: '#93d48e' },
   { bg: '#0A2A22', fg: '#5DCAA5' },
-  { bg: '#1E1A3A', fg: '#AFA9EC' },
+  { bg: '#14251d', fg: '#b9dfb4' },
   { bg: '#2A1F08', fg: '#EF9F27' },
   { bg: '#2A0E1A', fg: '#ED93B1' },
 ];
 
 const METRIC_ACCENTS = {
-  blue:  { bar: '#378ADD', iconBg: '#0C2A44', iconFg: '#7BB8F4', valColor: '#7BB8F4' },
+  blue:  { bar: '#43b86a', iconBg: '#10261a', iconFg: '#93d48e', valColor: '#93d48e' },
   teal:  { bar: '#1D9E75', iconBg: '#0A2A22', iconFg: '#5DCAA5', valColor: '#5DCAA5' },
   amber: { bar: '#EF9F27', iconBg: '#2A1F08', iconFg: '#EF9F27', valColor: '#EF9F27' },
 };
@@ -100,8 +100,8 @@ export default function Dashboard() {
           type="button"
           style={s.recBtn}
           onClick={() => navigateTo('/payments')}
-          onMouseEnter={(e) => (e.currentTarget.style.background = '#1A3D5C')}
-          onMouseLeave={(e) => (e.currentTarget.style.background = '#1A2F4A')}
+          onMouseEnter={(e) => (e.currentTarget.style.background = '#236d43')}
+          onMouseLeave={(e) => (e.currentTarget.style.background = '#1f7a4a')}
         >
           <PlusIcon /> Record payment
         </button>
@@ -315,9 +315,9 @@ const s = {
     gap: 6,
     padding: '9px 16px',
     borderRadius: 8,
-    border: '0.5px solid #2A2A38',
-    background: '#1A2F4A',
-    color: '#7BB8F4',
+    border: '0.5px solid rgba(67, 184, 106, 0.18)',
+    background: '#1f7a4a',
+    color: '#dff5e5',
     fontSize: 13,
     fontWeight: 500,
     cursor: 'pointer',
@@ -342,8 +342,8 @@ const s = {
     marginBottom: '1.5rem',
   },
   metric: {
-    background: '#161820',
-    border: '0.5px solid #2A2A38',
+    background: '#111827',
+    border: '0.5px solid rgba(67, 184, 106, 0.14)',
     borderRadius: 12,
     padding: '1.25rem 1.5rem',
     overflow: 'hidden',
@@ -366,7 +366,7 @@ const s = {
   metricLabel: {
     fontSize: 11,
     fontWeight: 500,
-    color: '#7A7A8C',
+    color: '#93d48e',
     textTransform: 'uppercase',
     letterSpacing: '0.06em',
   },
@@ -393,8 +393,8 @@ const s = {
     margin: 0,
   },
   panel: {
-    background: '#161820',
-    border: '0.5px solid #2A2A38',
+    background: '#111827',
+    border: '0.5px solid rgba(67, 184, 106, 0.14)',
     borderRadius: 12,
     overflow: 'hidden',
   },
@@ -403,7 +403,7 @@ const s = {
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: '1rem 1.25rem',
-    borderBottom: '0.5px solid #2A2A38',
+    borderBottom: '0.5px solid rgba(67, 184, 106, 0.14)',
   },
   panelTitleWrap: {
     display: 'flex',
@@ -415,8 +415,8 @@ const s = {
     width: 38,
     height: 38,
     borderRadius: 12,
-    background: 'linear-gradient(145deg, #0A2A22, #0C2A44)',
-    border: '0.5px solid #1A4A34',
+    background: 'linear-gradient(145deg, #0A2A22, #10261a)',
+    border: '0.5px solid rgba(67, 184, 106, 0.22)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -443,8 +443,8 @@ const s = {
     fontSize: 11,
     padding: '3px 10px',
     borderRadius: 999,
-    background: 'rgba(22, 101, 52, 0.18)',
-    color: '#86efac',
+    background: 'rgba(67, 184, 106, 0.16)',
+    color: '#b9dfb4',
     fontWeight: 500,
     border: '0.5px solid rgba(134, 239, 172, 0.35)',
   },
@@ -458,7 +458,7 @@ const s = {
     alignItems: 'center',
     gap: 12,
     padding: '12px 1.25rem',
-    borderBottom: '0.5px solid #2A2A38',
+    borderBottom: '0.5px solid rgba(67, 184, 106, 0.14)',
     transition: 'background 0.1s',
   },
   av: {

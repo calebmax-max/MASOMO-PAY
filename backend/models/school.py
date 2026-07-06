@@ -1,4 +1,4 @@
-try:
+﻿try:
     from ..database.db import db
 except ImportError:
     from database.db import db
@@ -16,4 +16,7 @@ class School(db.Model):
     users = db.relationship("User", back_populates="school", lazy=True)
     students = db.relationship("Student", back_populates="school", lazy=True)
     fee_structures = db.relationship("FeeStructure", back_populates="school", lazy=True)
+    academic_terms = db.relationship("AcademicTerm", back_populates="school", lazy=True)
     payments = db.relationship("Payment", back_populates="school", lazy=True)
+
+

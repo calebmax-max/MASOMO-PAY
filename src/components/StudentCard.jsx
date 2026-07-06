@@ -1,10 +1,10 @@
-import React from 'react';
+﻿import React from 'react';
 import { calculateBalance, formatCurrency } from '../utils/helpers';
 
 const AVATAR_COLORS = [
-  { bg: '#E6F1FB', fg: '#0C447C' },
+  { bg: '#E4F4EA', fg: '#1f7a4a' },
   { bg: '#E1F5EE', fg: '#085041' },
-  { bg: '#EEEDFE', fg: '#3C3489' },
+  { bg: '#EEF7EA', fg: '#2c6b3f' },
   { bg: '#FAEEDA', fg: '#633806' },
   { bg: '#FBEAF0', fg: '#72243E' },
 ];
@@ -46,7 +46,7 @@ export default function StudentCard({
       </div>
 
       {/* Class */}
-      <span style={s.cell}>{student.class_name || '—'}</span>
+      <span style={s.cell}>{student.class_name || 'â€”'}</span>
 
       {/* Balance */}
       <span style={{ ...s.balance, ...(isOwed ? s.balanceOwed : {}) }}>
@@ -103,7 +103,7 @@ export default function StudentCard({
 const s = {
   row: {
     display: 'grid',
-    gridTemplateColumns: '1fr 90px 100px 160px',
+    gridTemplateColumns: 'minmax(0, 1fr) 92px 102px minmax(240px, 1.15fr)',
     gap: 12,
     alignItems: 'center',
     padding: '10px 1.25rem',
@@ -151,7 +151,7 @@ const s = {
   balance: {
     fontSize: 13,
     fontWeight: 500,
-    color: '#5DCAA5',
+    color: '#43b86a',
   },
   balanceOwed: {
     color: '#F09595',
@@ -159,7 +159,9 @@ const s = {
   actions: {
     display: 'flex',
     alignItems: 'center',
+    justifyContent: 'flex-end',
     gap: 6,
+    flexWrap: 'wrap',
   },
   btn: {
     padding: '4px 10px',
@@ -172,14 +174,17 @@ const s = {
     color: '#7A7A8C',
     transition: 'background 0.1s',
     fontFamily: "'DM Sans', system-ui, sans-serif",
+    whiteSpace: 'nowrap',
   },
   btnPay: {
     borderColor: '#1A4A6A',
-    color: '#7BB8F4',
-    background: '#0F1E2E',
+    color: '#93d48e',
+    background: '#10261a',
   },
   btnDelete: {
     borderColor: '#7B2020',
     color: '#F09595',
   },
 };
+
+

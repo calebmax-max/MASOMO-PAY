@@ -4,7 +4,7 @@ import { downloadReportBundle } from '../services/reportService';
 import { formatCurrency } from '../utils/helpers';
 
 const REPORT_CARDS = [
-  { key: 'total_students',    label: 'Total students',    accent: '#7BB8F4', iconBg: '#0C2A44', bar: '#378ADD' },
+  { key: 'total_students',    label: 'Total students',    accent: '#93d48e', iconBg: '#10261a', bar: '#43b86a' },
   { key: 'total_collections', label: 'Total collections', accent: '#5DCAA5', iconBg: '#0A2A22', bar: '#1D9E75' },
   { key: 'total_balances',    label: 'Total balances',    accent: '#EF9F27', iconBg: '#2A1F08', bar: '#EF9F27' },
 ];
@@ -55,8 +55,8 @@ export default function Reports() {
           style={s.downloadBtn}
           onClick={handleDownload}
           disabled={downloading || loading}
-          onMouseEnter={(e) => !(downloading || loading) && (e.currentTarget.style.background = '#1A3D5C')}
-          onMouseLeave={(e) => !(downloading || loading) && (e.currentTarget.style.background = '#1A2F4A')}
+          onMouseEnter={(e) => !(downloading || loading) && (e.currentTarget.style.background = '#236d43')}
+          onMouseLeave={(e) => !(downloading || loading) && (e.currentTarget.style.background = '#1f7a4a')}
         >
           {downloading ? 'Preparing download...' : 'Download reports'}
         </button>
@@ -162,8 +162,8 @@ const s = {
     padding: '9px 16px',
     borderRadius: 8,
     border: '0.5px solid #2A2A38',
-    background: '#1A2F4A',
-    color: '#7BB8F4',
+    background: '#1f7a4a',
+    color: '#dff5e5',
     fontSize: 13,
     fontWeight: 500,
     cursor: 'pointer',

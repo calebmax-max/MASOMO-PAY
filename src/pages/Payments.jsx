@@ -218,7 +218,7 @@ export default function Payments() {
 
         {selectedStudent && (
           <div style={s.selectedInfo}>
-            Paying for <span style={{ color: '#7BB8F4', fontWeight: 500 }}>{selectedStudent.name}</span>{' '}
+            Paying for <span style={{ color: '#93d48e', fontWeight: 500 }}>{selectedStudent.name}</span>{' '}
             <span style={{ color: '#7A7A8C' }}>({selectedStudent.admission_no})</span>
           </div>
         )}
@@ -241,8 +241,8 @@ export default function Payments() {
             type="submit"
             style={s.submitBtn}
             disabled={savingManual}
-            onMouseEnter={(e) => !savingManual && (e.currentTarget.style.background = '#1A3D5C')}
-            onMouseLeave={(e) => !savingManual && (e.currentTarget.style.background = '#1A2F4A')}
+            onMouseEnter={(e) => !savingManual && (e.currentTarget.style.background = '#236d43')}
+            onMouseLeave={(e) => !savingManual && (e.currentTarget.style.background = '#1f7a4a')}
           >
             {savingManual ? 'Saving...' : 'Save payment'}
           </button>
@@ -365,7 +365,7 @@ const s = {
     transition: 'background 0.1s',
   },
   searchItemActive: {
-    background: '#0C2A44',
+    background: '#10261a',
   },
   searchName: {
     fontSize: 13,
@@ -379,15 +379,15 @@ const s = {
   searchBal: {
     fontSize: 12,
     fontWeight: 600,
-    color: '#EF9F27',
+    color: '#e9b24e',
     fontFamily: "'DM Mono', monospace",
   },
   selectedInfo: {
     fontSize: 13,
     color: '#7A7A8C',
     padding: '8px 12px',
-    background: '#0C2A44',
-    border: '0.5px solid #1A3D5C',
+    background: '#10261a',
+    border: '0.5px solid rgba(67, 184, 106, 0.22)',
     borderRadius: 8,
   },
   errorBanner: {
@@ -409,7 +409,7 @@ const s = {
     borderRadius: 8,
     border: '0.5px solid #1A4A34',
     background: '#0A2A22',
-    color: '#5DCAA5',
+    color: '#93d48e',
     fontSize: 13,
   },
   btnRow: {
@@ -424,8 +424,8 @@ const s = {
     padding: '9px 20px',
     borderRadius: 8,
     border: '0.5px solid #2A2A38',
-    background: '#1A2F4A',
-    color: '#7BB8F4',
+    background: '#1f7a4a',
+    color: '#dff5e5',
     fontSize: 13,
     fontWeight: 500,
     cursor: 'pointer',

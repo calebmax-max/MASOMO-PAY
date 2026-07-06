@@ -1,10 +1,10 @@
-import React from 'react';
+﻿import React from 'react';
 import { formatCurrency, formatDate } from '../utils/helpers';
 
 export default function PaymentTable({ payments = [] }) {
   return (
-    <div className="table-wrap">
-      <table className="table">
+    <div className="portal-table-wrap table-wrap">
+      <table className="portal-table">
         <thead>
           <tr>
             <th>Student</th>
@@ -61,3 +61,4 @@ function getStatusLabel(status) {
       return status || 'Unknown';
   }
 }
+

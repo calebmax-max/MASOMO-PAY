@@ -28,6 +28,8 @@ export default function PortalDashboard() {
   const cached = readPortalCache();
   const [student, setStudent] = useState(cached?.student || null);
   const [payments, setPayments] = useState(cached?.payments || []);
+  const [termFees, setTermFees] = useState(cached?.term_fees || { present: null, last: null, next: null });
+  const [activeTermTab, setActiveTermTab] = useState('present');
   const [form, setForm] = useState({ amount: cached?.amount || '', phone_number: '' });
   const [loading, setLoading] = useState(!cached);
   const [saving, setSaving] = useState(false);
@@ -50,12 +52,14 @@ export default function PortalDashboard() {
     const [profileData, paymentData] = await Promise.all([getPortalProfile(), getPortalPayments()]);
     const nextStudent = profileData.student;
     const nextPayments = paymentData.payments || [];
+    const nextTermFees = profileData.term_fees || { present: null, last: null, next: null };
     const nextAmount = profileData.student?.balance ? String(profileData.student.balance) : '';
     setStudent(nextStudent);
     setPayments(nextPayments);
+    setTermFees(nextTermFees);
     setForm((current) => ({ ...current, amount: nextAmount }));
     setIsPolling(nextPayments.some((payment) => payment.status === 'pending'));
-    writePortalCache({ student: nextStudent, payments: nextPayments, amount: nextAmount });
+    writePortalCache({ student: nextStudent, payments: nextPayments, term_fees: nextTermFees, amount: nextAmount });
     return nextPayments;
   }, []);
 
@@ -107,7 +111,10 @@ export default function PortalDashboard() {
     };
   }, [clearRefreshTimer, loadPortal, scheduleRefresh]);
 
-  const recentPayments = useMemo(() => payments.slice(0, 8), [payments]);
+  const successfulPayments = useMemo(
+    () => payments.filter((payment) => payment.status === 'completed').slice(0, 8),
+    [payments]
+  );
 
   const submitPayment = async (event) => {
     event.preventDefault();
@@ -137,11 +144,48 @@ export default function PortalDashboard() {
   };
 
   return (
-    <section className="page-shell">
-      <div className="page-header">
-        <div>
-          <h1>My Account</h1>
-          <p>View balance and payment history.</p>
+    <section className="page-shell portal-dashboard-page">
+      <div className="portal-card portal-hero">
+        <div className="portal-hero-panel">
+          <span className="portal-hero-kicker">Student account</span>
+          <h1 className="portal-hero-title">Simple fee tracking for parents and students.</h1>
+          <p className="portal-hero-copy">
+            View your current balance, make a payment request, and check the latest transaction history without digging through menus.
+          </p>
+          <div className="portal-hero-actions">
+            <button
+              type="button"
+              className="portal-ghost-btn"
+              onClick={() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })}
+            >
+              See payment history
+            </button>
+            <button
+              type="button"
+              className="portal-ghost-btn"
+              onClick={() => setForm((current) => ({ ...current, amount: student?.balance ? String(student.balance) : current.amount }))}
+            >
+              Use current balance
+            </button>
+          </div>
+        </div>
+
+        <div className="portal-hero-card">
+          <div className="portal-hero-balance">
+            <span>Balance due</span>
+            <strong>{student ? formatCurrency(student.balance) : '—'}</strong>
+            <small>Updated from your latest account data.</small>
+          </div>
+          <div className="portal-quick-grid">
+            <div className="portal-quick-item">
+              <span>Student</span>
+              <strong>{student?.name || '—'}</strong>
+            </div>
+            <div className="portal-quick-item">
+              <span>Admission No</span>
+              <strong>{student?.admission_no || '—'}</strong>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -152,19 +196,49 @@ export default function PortalDashboard() {
         <p className="portal-muted">Loading portal...</p>
       ) : student ? (
         <>
-          <div className="stats-grid">
-            <div className="portal-card portal-stat-card">
-              <span>Student</span>
-              <strong>{student.name}</strong>
+          <div className="portal-card">
+            <div className="section-header">
+              <h2>Term fees</h2>
             </div>
-            <div className="portal-card portal-stat-card">
-              <span>Admission No</span>
-              <strong>{student.admission_no}</strong>
+            <div className="portal-tabs" style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '1rem' }}>
+              {['present', 'last', 'next'].map((tabKey) => {
+                const label = tabKey === 'present' ? 'Present term' : tabKey === 'last' ? 'Last term' : 'Next term';
+                const active = activeTermTab === tabKey;
+                return (
+                  <button
+                    key={tabKey}
+                    type="button"
+                    className={`portal-ghost-btn ${active ? 'portal-primary-btn' : ''}`}
+                    onClick={() => setActiveTermTab(tabKey)}
+                    style={{ minWidth: '8.5rem' }}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
             </div>
-            <div className="portal-card portal-stat-card">
-              <span>Balance</span>
-              <strong>{formatCurrency(student.balance)}</strong>
-            </div>
+            {(() => {
+              const selectedFee = termFees[activeTermTab];
+              if (!selectedFee) {
+                return <p className="portal-empty">No fee information available for this term yet.</p>;
+              }
+              return (
+                <div className="portal-hero-card" style={{ padding: '1rem' }}>
+                  <div className="portal-hero-balance">
+                    <span>{activeTermTab === 'present' ? 'Present term fee' : activeTermTab === 'last' ? 'Last term fee' : 'Next term fee'}</span>
+                    <strong>{formatCurrency(selectedFee.amount || 0)}</strong>
+                    <small>{selectedFee.term_name || 'Term fee'}</small>
+                  </div>
+                  {(selectedFee.start_date || selectedFee.end_date) ? (
+                    <p className="portal-help">
+                      {selectedFee.start_date && selectedFee.end_date
+                        ? `${selectedFee.start_date} to ${selectedFee.end_date}`
+                        : selectedFee.start_date || selectedFee.end_date}
+                    </p>
+                  ) : null}
+                </div>
+              );
+            })()}
           </div>
 
           <div className="portal-card portal-form">
@@ -201,9 +275,9 @@ export default function PortalDashboard() {
 
           <div className="portal-card">
             <div className="section-header">
-              <h2>Payment History</h2>
+              <h2>Successful Payment History</h2>
             </div>
-            {recentPayments.length ? (
+            {successfulPayments.length ? (
               <div className="portal-table-wrap">
                 <table className="portal-table">
                   <thead>
@@ -216,7 +290,7 @@ export default function PortalDashboard() {
                     </tr>
                   </thead>
                   <tbody>
-                    {recentPayments.map((payment) => (
+                    {successfulPayments.map((payment) => (
                       <tr key={payment.id}>
                         <td>{formatCurrency(payment.amount)}</td>
                         <td>{payment.payment_method}</td>
@@ -233,7 +307,7 @@ export default function PortalDashboard() {
                 </table>
               </div>
             ) : (
-              <p className="portal-empty">No payments yet.</p>
+              <p className="portal-empty">No successful payments yet.</p>
             )}
           </div>
         </>

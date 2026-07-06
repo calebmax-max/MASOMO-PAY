@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import AuthLayout, { AuthAlertIcon } from '../components/AuthLayout';
 import { usePortalAuth } from '../context/PortalAuthContext';
 import { navigateTo } from '../utils/navigation';
 
@@ -24,253 +25,79 @@ export default function PortalLogin() {
   };
 
   return (
-    <section style={s.shell}>
-      <div style={s.center}>
-        <div style={s.topbar}>
-          <img
-            src="/masomo-logo.png"
-            alt="Masomo logo"
-            style={s.logo}
-            onError={(event) => {
-              event.currentTarget.onerror = null;
-              event.currentTarget.src = '/logo512.png';
-            }}
-          />
-          <div>
-            <h1 style={s.pgTitle}>Student Portal</h1>
-            <p style={s.pgSub}>Log in with your admission number and portal PIN.</p>
-          </div>
-        </div>
-
-        <div style={s.card}>
-          <p style={s.cardTitle}>Sign in</p>
-          <form style={s.formGrid} onSubmit={handleSubmit}>
-            <label style={s.label}>
-              Admission Number
-              <input
-                style={s.input}
-                value={admissionNo}
-                onChange={(event) => setAdmissionNo(event.target.value)}
-                autoComplete="username"
-              />
-            </label>
-
-            <label style={s.label}>
-              <span style={s.labelRow}>
-                <span>Portal PIN</span>
-                <button
-                  type="button"
-                  style={s.showBtn}
-                  onClick={() => setShowPin((current) => !current)}
-                >
-                  {showPin ? 'Hide' : 'Show'}
-                </button>
-              </span>
-              <input
-                style={s.input}
-                value={pin}
-                onChange={(event) => setPin(event.target.value)}
-                type={showPin ? 'text' : 'password'}
-                autoComplete="current-password"
-              />
-            </label>
-
-            {error ? (
-              <div style={s.errorBanner}>
-                <AlertIcon />
-                {error}
-              </div>
-            ) : null}
-
-            <div style={s.btnRow}>
-              <button
-                type="button"
-                style={s.secondaryBtn}
-                onClick={() => navigateTo('/login')}
-                onMouseEnter={(e) => (e.currentTarget.style.background = '#1C1E28')}
-                onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
-              >
-                Back to staff login
-              </button>
-              <button
-                type="submit"
-                style={s.submitBtn}
-                disabled={loading}
-                onMouseEnter={(e) => !loading && (e.currentTarget.style.background = '#1A3D5C')}
-                onMouseLeave={(e) => !loading && (e.currentTarget.style.background = '#1A2F4A')}
-              >
-                {loading ? 'Signing in…' : 'Open Portal'}
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-const ico = { width: 15, height: 15, display: 'block', flexShrink: 0 };
-
-function AlertIcon() {
-  return (
-    <svg
-      style={{ ...ico, flexShrink: 0 }}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={1.8}
-      strokeLinecap="round"
-      strokeLinejoin="round"
+    <AuthLayout
+      kicker="Parent & student access"
+      title="Check fees, pay from your phone, and see every transaction in one place."
+      description="Use your admission number and portal PIN to open the student account. The portal stays quick on mobile with a clear balance view and recent payment history."
+      highlights={[
+        {
+          title: 'Fast login',
+          description: 'Admission number plus PIN.',
+        },
+        {
+          title: 'Clear balance',
+          description: 'See what is due at a glance.',
+        },
+        {
+          title: 'Payment trail',
+          description: 'Track STK requests and receipts.',
+        },
+      ]}
+      panelTitle="Portal sign in"
     >
-      <circle cx="12" cy="12" r="10" />
-      <path d="M12 8v4M12 16h.01" />
-    </svg>
+      <form className="portal-auth-form" onSubmit={handleSubmit}>
+        <label className="portal-field">
+          Admission Number
+          <input
+            className="portal-input"
+            value={admissionNo}
+            onChange={(event) => setAdmissionNo(event.target.value)}
+            autoComplete="username"
+            placeholder="e.g. ADM001"
+          />
+        </label>
+
+        <label className="portal-field">
+          <span className="portal-field-row">
+            <span>Portal PIN</span>
+            <button
+              type="button"
+              className="portal-pin-toggle"
+              onClick={() => setShowPin((current) => !current)}
+            >
+              {showPin ? 'Hide' : 'Show'}
+            </button>
+          </span>
+          <input
+            className="portal-input"
+            value={pin}
+            onChange={(event) => setPin(event.target.value)}
+            type={showPin ? 'text' : 'password'}
+            autoComplete="current-password"
+            placeholder="Enter PIN"
+          />
+        </label>
+
+        {error ? (
+          <div className="portal-error-banner portal-auth-error">
+            <AuthAlertIcon />
+            {error}
+          </div>
+        ) : null}
+
+        <div className="portal-auth-actions">
+          <button
+            type="button"
+            className="portal-secondary-btn"
+            onClick={() => navigateTo('/login')}
+          >
+            Back to staff login
+          </button>
+          <button type="submit" className="portal-primary-btn" disabled={loading}>
+            {loading ? 'Signing in...' : 'Open Portal'}
+          </button>
+        </div>
+      </form>
+    </AuthLayout>
   );
 }
-
-const s = {
-  shell: {
-    padding: '1.5rem',
-    fontFamily: "'DM Sans', var(--font-sans, system-ui, sans-serif)",
-    background: '#0F1117',
-    borderRadius: 12,
-    minHeight: '100vh',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  center: {
-    width: '100%',
-    maxWidth: 420,
-  },
-  topbar: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 12,
-    marginBottom: '2rem',
-  },
-  logo: {
-    width: 40,
-    height: 40,
-    borderRadius: 8,
-    flexShrink: 0,
-    objectFit: 'contain',
-  },
-  pgTitle: {
-    fontSize: 22,
-    fontWeight: 600,
-    color: '#F0F0F2',
-    margin: '0 0 3px',
-    letterSpacing: '-0.02em',
-  },
-  pgSub: {
-    fontSize: 13,
-    color: '#7A7A8C',
-    marginTop: 3,
-    marginBottom: 0,
-  },
-  card: {
-    background: '#161820',
-    border: '0.5px solid #2A2A38',
-    borderRadius: 12,
-    padding: '1.25rem 1.5rem',
-  },
-  cardTitle: {
-    fontSize: 14,
-    fontWeight: 600,
-    color: '#F0F0F2',
-    margin: '0 0 1.25rem',
-    paddingBottom: 12,
-    borderBottom: '0.5px solid #2A2A38',
-  },
-  formGrid: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 14,
-  },
-  label: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 6,
-    fontSize: 12,
-    fontWeight: 500,
-    color: '#7A7A8C',
-    textTransform: 'uppercase',
-    letterSpacing: '0.06em',
-  },
-  input: {
-    padding: '9px 12px',
-    fontSize: 13,
-    border: '0.5px solid #2A2A38',
-    borderRadius: 8,
-    background: '#0F1117',
-    color: '#F0F0F2',
-    outline: 'none',
-    fontFamily: "'DM Sans', system-ui, sans-serif",
-    width: '100%',
-    boxSizing: 'border-box',
-  },
-  labelRow: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 12,
-  },
-  showBtn: {
-    border: '0',
-    background: 'transparent',
-    color: '#7BB8F4',
-    fontSize: 12,
-    fontWeight: 600,
-    cursor: 'pointer',
-    padding: 0,
-    fontFamily: "'DM Sans', system-ui, sans-serif",
-  },
-  errorBanner: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 8,
-    padding: '10px 14px',
-    borderRadius: 8,
-    border: '0.5px solid #7B2020',
-    background: '#2A1010',
-    color: '#F09595',
-    fontSize: 13,
-  },
-  btnRow: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 8,
-    paddingTop: 4,
-  },
-  secondaryBtn: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    padding: '9px 14px',
-    borderRadius: 8,
-    border: '0.5px solid #2A2A38',
-    background: 'transparent',
-    color: '#7A7A8C',
-    fontSize: 13,
-    fontWeight: 500,
-    cursor: 'pointer',
-    transition: 'background 0.15s',
-    fontFamily: "'DM Sans', system-ui, sans-serif",
-  },
-  submitBtn: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: 6,
-    padding: '9px 20px',
-    borderRadius: 8,
-    border: '0.5px solid #2A2A38',
-    background: '#1A2F4A',
-    color: '#7BB8F4',
-    fontSize: 13,
-    fontWeight: 500,
-    cursor: 'pointer',
-    transition: 'background 0.15s',
-    fontFamily: "'DM Sans', system-ui, sans-serif",
-  },
-};

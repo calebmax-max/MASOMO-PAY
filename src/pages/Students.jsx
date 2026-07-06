@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import StudentCard from '../components/StudentCard';
 import { deleteStudent, getStudents } from '../services/studentService';
@@ -48,7 +48,7 @@ export default function Students() {
   return (
     <section style={s.shell}>
 
-      {/* ── Header ── */}
+      {/* â”€â”€ Header â”€â”€ */}
       <div style={s.topbar}>
         <div>
           <h1 style={s.pgTitle}>Students</h1>
@@ -59,20 +59,20 @@ export default function Students() {
             type="button"
             style={s.addBtn}
             onClick={() => navigateTo('/students/new')}
-            onMouseEnter={(e) => (e.currentTarget.style.background = '#1A3D5C')}
-            onMouseLeave={(e) => (e.currentTarget.style.background = '#1A2F4A')}
+            onMouseEnter={(e) => (e.currentTarget.style.background = '#236d43')}
+            onMouseLeave={(e) => (e.currentTarget.style.background = '#1f7a4a')}
           >
             <PlusIcon /> Add student
           </button>
         ) : null}
       </div>
 
-      {/* ── Search ── */}
+      {/* â”€â”€ Search â”€â”€ */}
       <div style={s.searchWrap}>
         <SearchIcon />
         <input
           style={s.searchInput}
-          placeholder="Search by name or admission number…"
+          placeholder="Search by name or admission numberâ€¦"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onKeyUp={(e) => {
@@ -83,7 +83,7 @@ export default function Students() {
         />
       </div>
 
-      {/* ── Error ── */}
+      {/* â”€â”€ Error â”€â”€ */}
       {error && (
         <div style={s.errorBar}>
           <AlertIcon />
@@ -91,9 +91,9 @@ export default function Students() {
         </div>
       )}
 
-      {/* ── Table ── */}
+      {/* â”€â”€ Table â”€â”€ */}
       {loading ? (
-        <p style={s.muted}>Loading students…</p>
+        <p style={s.muted}>Loading studentsâ€¦</p>
       ) : students.length ? (
         <div style={s.panel}>
           <div style={s.panelHead}>
@@ -125,7 +125,7 @@ export default function Students() {
   );
 }
 
-/* ─── Icons ─────────────────────────────────────────────────── */
+/* â”€â”€â”€ Icons â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 const ico = { width: 15, height: 15, display: 'block', flexShrink: 0 };
 
 function PlusIcon() {
@@ -150,7 +150,7 @@ function AlertIcon() {
   );
 }
 
-/* ─── Styles ─────────────────────────────────────────────────── */
+/* â”€â”€â”€ Styles â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 const s = {
   shell: {
     padding: '1.5rem',
@@ -185,8 +185,8 @@ const s = {
     padding: '9px 16px',
     borderRadius: 8,
     border: '0.5px solid #2A2A38',
-    background: '#1A2F4A',
-    color: '#7BB8F4',
+    background: '#1f7a4a',
+    color: '#dff5e5',
     fontSize: 13,
     fontWeight: 500,
     cursor: 'pointer',
@@ -228,7 +228,7 @@ const s = {
   },
   panelHead: {
     display: 'grid',
-    gridTemplateColumns: '1fr 90px 100px 160px',
+    gridTemplateColumns: 'minmax(0, 1fr) 92px 102px minmax(240px, 1.15fr)',
     gap: 12,
     padding: '8px 1.25rem',
     borderBottom: '0.5px solid #2A2A38',
@@ -253,3 +253,4 @@ const s = {
     margin: 0,
   },
 };
+

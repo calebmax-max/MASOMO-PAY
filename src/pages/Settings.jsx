@@ -1,23 +1,43 @@
-import React, { useEffect, useMemo, useState } from 'react';
+﻿import React, { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import {
+  createAcademicTerm,
   createFeeStructure,
+  deleteAcademicTerm,
   deleteFeeStructure,
   getSchoolSettings,
+  updateAcademicTerm,
   updateFeeStructure,
   updateSchoolSettings,
 } from '../services/schoolService';
 
 const initialForm = { name: '', phone: '', email: '', address: '' };
 
-function makeDraftFeeStructure() {
+function makeDraftAcademicTerm() {
   return {
-    clientId: `new-${Date.now()}-${Math.random().toString(16).slice(2)}`,
+    clientId: `term-${Date.now()}-${Math.random().toString(16).slice(2)}`,
+    id: null,
+    name: '',
+    start_date: '',
+    end_date: '',
+  };
+}
+
+function makeDraftFeeStructure(defaultTerm = '') {
+  return {
+    clientId: `fee-${Date.now()}-${Math.random().toString(16).slice(2)}`,
     id: null,
     class_name: '',
-    term: 'Term 1',
+    term: defaultTerm,
     amount: '',
   };
+}
+
+function formatDateLabel(value) {
+  if (!value) return '—';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return new Intl.DateTimeFormat('en-KE', { dateStyle: 'medium' }).format(date);
 }
 
 export default function Settings() {
@@ -25,16 +45,34 @@ export default function Settings() {
   const canEditSchool = user?.role === 'admin';
   const canEditFees = user?.role === 'admin' || user?.role === 'accountant';
   const [form, setForm] = useState(initialForm);
+  const [academicTerms, setAcademicTerms] = useState([]);
+  const [activeTerm, setActiveTerm] = useState(null);
   const [feeStructures, setFeeStructures] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [savingTermId, setSavingTermId] = useState(null);
   const [savingFeeId, setSavingFeeId] = useState(null);
-  const [savingAll, setSavingAll] = useState(false);
+  const [savingAllTerms, setSavingAllTerms] = useState(false);
+  const [savingAllFees, setSavingAllFees] = useState(false);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
 
+  const refreshSettings = async () => {
+    const data = await getSchoolSettings();
+    setForm({
+      name: data.school?.name || '',
+      phone: data.school?.phone || '',
+      email: data.school?.email || '',
+      address: data.school?.address || '',
+    });
+    setAcademicTerms((data.academic_terms || []).map((item) => ({ ...item })));
+    setActiveTerm(data.active_term || null);
+    setFeeStructures((data.fee_structures || []).map((item) => ({ ...item })));
+  };
+
   useEffect(() => {
     let mounted = true;
+
     async function loadSettings() {
       try {
         setLoading(true);
@@ -47,6 +85,8 @@ export default function Settings() {
           email: data.school?.email || '',
           address: data.school?.address || '',
         });
+        setAcademicTerms((data.academic_terms || []).map((item) => ({ ...item })));
+        setActiveTerm(data.active_term || null);
         setFeeStructures((data.fee_structures || []).map((item) => ({ ...item })));
       } catch (err) {
         if (mounted) setError(err.message || 'Could not load settings');
@@ -54,18 +94,36 @@ export default function Settings() {
         if (mounted) setLoading(false);
       }
     }
+
     loadSettings();
     return () => {
       mounted = false;
     };
   }, []);
 
-  const unsavedCount = useMemo(
+  const unsavedTerms = useMemo(
+    () => academicTerms.filter((item) => !item.id || item._dirty).length,
+    [academicTerms],
+  );
+
+  const unsavedFees = useMemo(
     () => feeStructures.filter((item) => !item.id || item._dirty).length,
     [feeStructures],
   );
 
+  const termNames = useMemo(() => academicTerms.map((term) => term.name).filter(Boolean), [academicTerms]);
+
   const updateField = (field, value) => setForm((current) => ({ ...current, [field]: value }));
+
+  const updateTermField = (termKey, field, value) => {
+    setAcademicTerms((current) =>
+      current.map((item) => {
+        const matches = item.id ? item.id === termKey : item.clientId === termKey;
+        if (!matches) return item;
+        return { ...item, [field]: value, _dirty: true };
+      }),
+    );
+  };
 
   const updateFeeField = (feeKey, field, value) => {
     setFeeStructures((current) =>
@@ -77,10 +135,40 @@ export default function Settings() {
     );
   };
 
-  const addFeeStructure = () => {
-    setFeeStructures((current) => [makeDraftFeeStructure(), ...current]);
+  const addAcademicTerm = () => {
+    setAcademicTerms((current) => [makeDraftAcademicTerm(), ...current]);
     setMessage('');
     setError('');
+  };
+
+  const addFeeStructure = () => {
+    const defaultTerm = activeTerm?.name || termNames[0] || '';
+    setFeeStructures((current) => [makeDraftFeeStructure(defaultTerm), ...current]);
+    setMessage('');
+    setError('');
+  };
+
+  const removeAcademicTerm = async (academicTerm) => {
+    setError('');
+    setMessage('');
+
+    const confirmed = window.confirm(
+      `Delete academic term ${academicTerm.name || 'this term'}?`,
+    );
+    if (!confirmed) return;
+
+    if (!academicTerm.id) {
+      setAcademicTerms((current) => current.filter((item) => item.clientId !== academicTerm.clientId));
+      return;
+    }
+
+    try {
+      await deleteAcademicTerm(academicTerm.id);
+      await refreshSettings();
+      setMessage('Academic term deleted.');
+    } catch (err) {
+      setError(err.message || 'Could not delete academic term');
+    }
   };
 
   const removeFeeStructure = async (feeStructure) => {
@@ -104,6 +192,35 @@ export default function Settings() {
     } catch (err) {
       setError(err.message || 'Could not delete fee structure');
     }
+  };
+
+  const saveAcademicTerm = async (academicTerm) => {
+    const payload = {
+      name: academicTerm.name,
+      start_date: academicTerm.start_date,
+      end_date: academicTerm.end_date,
+    };
+
+    if (!payload.name || !payload.start_date || !payload.end_date) {
+      throw new Error('Fill in term name, start date, and end date before saving.');
+    }
+
+    if (academicTerm.id) {
+      const data = await updateAcademicTerm(academicTerm.id, payload);
+      setAcademicTerms((current) =>
+        current.map((item) =>
+          item.id === academicTerm.id ? { ...data.academic_term, clientId: item.clientId, _dirty: false } : item,
+        ),
+      );
+      return;
+    }
+
+    const data = await createAcademicTerm(payload);
+    setAcademicTerms((current) =>
+      current.map((item) =>
+        item.clientId === academicTerm.clientId ? { ...data.academic_term, clientId: item.clientId, _dirty: false } : item,
+      ),
+    );
   };
 
   const saveFeeStructure = async (feeStructure) => {
@@ -135,8 +252,28 @@ export default function Settings() {
     );
   };
 
+  const saveAllAcademicTerms = async () => {
+    setSavingAllTerms(true);
+    setError('');
+    setMessage('');
+
+    try {
+      for (const item of academicTerms) {
+        if (!item.id || item._dirty) {
+          await saveAcademicTerm(item);
+        }
+      }
+      await refreshSettings();
+      setMessage('All academic term changes saved.');
+    } catch (err) {
+      setError(err.message || 'Could not save academic terms');
+    } finally {
+      setSavingAllTerms(false);
+    }
+  };
+
   const saveAllFeeStructures = async () => {
-    setSavingAll(true);
+    setSavingAllFees(true);
     setError('');
     setMessage('');
 
@@ -150,7 +287,7 @@ export default function Settings() {
     } catch (err) {
       setError(err.message || 'Could not save all fee structures');
     } finally {
-      setSavingAll(false);
+      setSavingAllFees(false);
     }
   };
 
@@ -175,12 +312,16 @@ export default function Settings() {
     }
   };
 
+  const activeTermLabel = activeTerm
+    ? `${activeTerm.name} ${activeTerm.start_date ? `(${formatDateLabel(activeTerm.start_date)} - ${formatDateLabel(activeTerm.end_date)})` : ''}`
+    : 'No active term configured';
+
   return (
     <section style={s.shell}>
       <div style={s.topbar}>
         <div>
           <h1 style={s.pgTitle}>Settings</h1>
-          <p style={s.pgSub}>Manage your school profile and fee structure.</p>
+          <p style={s.pgSub}>Manage your school profile, terms, and fee structure.</p>
         </div>
       </div>
 
@@ -245,22 +386,147 @@ export default function Settings() {
 
       <div style={s.card}>
         <div style={s.sectionHead}>
-          <p style={s.cardTitle}>Fee structure</p>
+          <div>
+            <p style={s.cardTitle}>Academic terms</p>
+            <p style={s.sectionNote}>Current term resolves automatically from the dates you enter.</p>
+          </div>
           {canEditFees ? (
             <div style={s.sectionActions}>
-              <span style={s.feeHint}>{unsavedCount ? `${unsavedCount} unsaved change(s)` : 'All changes saved'}</span>
+              <span style={s.activeTermPill}>{activeTermLabel}</span>
+              <span style={s.feeHint}>{unsavedTerms ? `${unsavedTerms} unsaved change(s)` : 'All changes saved'}</span>
+              <button type="button" style={s.ghostBtn} onClick={addAcademicTerm}>
+                + Add term
+              </button>
+              <button
+                type="button"
+                style={s.submitBtn}
+                disabled={savingAllTerms || !academicTerms.length}
+                onClick={saveAllAcademicTerms}
+                onMouseEnter={(e) => !savingAllTerms && (e.currentTarget.style.background = '#1A3D5C')}
+                onMouseLeave={(e) => !savingAllTerms && (e.currentTarget.style.background = '#1A2F4A')}
+              >
+                {savingAllTerms ? 'Saving...' : 'Save all terms'}
+              </button>
+            </div>
+          ) : null}
+        </div>
+
+        {academicTerms.length ? (
+          <div style={s.feeGrid}>
+            {academicTerms.map((item) => {
+              const termKey = item.id || item.clientId;
+              const isNew = !item.id;
+              return (
+                <div key={termKey} style={s.feeCard}>
+                  <div style={s.termGrid}>
+                    <label style={s.label}>
+                      Term name
+                      <input
+                        style={s.input}
+                        type="text"
+                        value={item.name}
+                        onChange={(e) => updateTermField(termKey, 'name', e.target.value)}
+                        placeholder="e.g. Term 1"
+                        disabled={!canEditFees}
+                      />
+                    </label>
+                    <label style={s.label}>
+                      Start date
+                      <input
+                        style={s.input}
+                        type="date"
+                        value={item.start_date || ''}
+                        onChange={(e) => updateTermField(termKey, 'start_date', e.target.value)}
+                        disabled={!canEditFees}
+                      />
+                    </label>
+                    <label style={s.label}>
+                      End date
+                      <input
+                        style={s.input}
+                        type="date"
+                        value={item.end_date || ''}
+                        onChange={(e) => updateTermField(termKey, 'end_date', e.target.value)}
+                        disabled={!canEditFees}
+                      />
+                    </label>
+                  </div>
+
+                  <div style={s.feeFooter}>
+                    <span style={s.feeMeta}>
+                      {item.is_active ? 'Active term' : isNew ? 'New academic term' : `Term ID ${item.id}`}
+                    </span>
+                    {canEditFees ? (
+                      <div style={s.rowActions}>
+                        <button
+                          type="button"
+                          style={s.deleteBtn}
+                          onClick={() => removeAcademicTerm(item)}
+                        >
+                          Delete
+                        </button>
+                        <button
+                          type="button"
+                          style={s.feeSaveBtn}
+                          onClick={async () => {
+                            setSavingTermId(termKey);
+                            setError('');
+                            setMessage('');
+                            try {
+                              await saveAcademicTerm(item);
+                              await refreshSettings();
+                              setMessage('Academic term updated.');
+                            } catch (err) {
+                              setError(err.message || 'Could not save academic term');
+                            } finally {
+                              setSavingTermId(null);
+                            }
+                          }}
+                          disabled={savingTermId === termKey}
+                          onMouseEnter={(e) =>
+                            savingTermId !== termKey && (e.currentTarget.style.background = '#1A3D5C')
+                          }
+                          onMouseLeave={(e) =>
+                            savingTermId !== termKey && (e.currentTarget.style.background = '#1A2F4A')
+                          }
+                        >
+                          {savingTermId === termKey ? 'Saving...' : 'Save term'}
+                        </button>
+                      </div>
+                    ) : (
+                      <span style={s.readOnlyNote}>Academic terms are editable only by the admin or accountant.</span>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <p style={s.muted}>No academic terms have been configured yet.</p>
+        )}
+      </div>
+
+      <div style={s.card}>
+        <div style={s.sectionHead}>
+          <div>
+            <p style={s.cardTitle}>Fee structure</p>
+            <p style={s.sectionNote}>Each fee row should point to one of the configured academic terms.</p>
+          </div>
+          {canEditFees ? (
+            <div style={s.sectionActions}>
+              <span style={s.feeHint}>{unsavedFees ? `${unsavedFees} unsaved change(s)` : 'All changes saved'}</span>
               <button type="button" style={s.ghostBtn} onClick={addFeeStructure}>
                 + Add fee structure
               </button>
               <button
                 type="button"
                 style={s.submitBtn}
-                disabled={savingAll || !feeStructures.length}
+                disabled={savingAllFees || !feeStructures.length}
                 onClick={saveAllFeeStructures}
-                onMouseEnter={(e) => !savingAll && (e.currentTarget.style.background = '#1A3D5C')}
-                onMouseLeave={(e) => !savingAll && (e.currentTarget.style.background = '#1A2F4A')}
+                onMouseEnter={(e) => !savingAllFees && (e.currentTarget.style.background = '#1A3D5C')}
+                onMouseLeave={(e) => !savingAllFees && (e.currentTarget.style.background = '#1A2F4A')}
               >
-                {savingAll ? 'Saving all...' : 'Save all changes'}
+                {savingAllFees ? 'Saving...' : 'Save all changes'}
               </button>
             </div>
           ) : null}
@@ -271,6 +537,7 @@ export default function Settings() {
             {feeStructures.map((item) => {
               const feeKey = item.id || item.clientId;
               const isNew = !item.id;
+              const termMatches = termNames.includes(item.term);
               return (
                 <div key={feeKey} style={s.feeCard}>
                   <div style={s.feeFormGrid}>
@@ -287,14 +554,33 @@ export default function Settings() {
                     </label>
                     <label style={s.label}>
                       Term
-                      <input
-                        style={s.input}
-                        type="text"
-                        value={item.term}
-                        onChange={(e) => updateFeeField(feeKey, 'term', e.target.value)}
-                        placeholder="e.g. Term 1"
-                        disabled={!canEditFees}
-                      />
+                      {academicTerms.length ? (
+                        <select
+                          style={s.input}
+                          value={item.term || ''}
+                          onChange={(e) => updateFeeField(feeKey, 'term', e.target.value)}
+                          disabled={!canEditFees}
+                        >
+                          <option value="">Select term</option>
+                          {!termMatches && item.term ? (
+                            <option value={item.term}>{item.term} (legacy)</option>
+                          ) : null}
+                          {academicTerms.map((term) => (
+                            <option key={term.id} value={term.name}>
+                              {term.name}{term.is_active ? ' (current)' : ''}
+                            </option>
+                          ))}
+                        </select>
+                      ) : (
+                        <input
+                          style={s.input}
+                          type="text"
+                          value={item.term}
+                          onChange={(e) => updateFeeField(feeKey, 'term', e.target.value)}
+                          placeholder="e.g. Term 1"
+                          disabled={!canEditFees}
+                        />
+                      )}
                     </label>
                     <label style={s.label}>
                       Amount
@@ -366,6 +652,7 @@ export default function Settings() {
 }
 
 const ico = { width: 15, height: 15, display: 'block', flexShrink: 0 };
+
 function AlertIcon() {
   return (
     <svg style={{ ...ico, flexShrink: 0 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
@@ -373,6 +660,7 @@ function AlertIcon() {
     </svg>
   );
 }
+
 function CheckIcon() {
   return (
     <svg style={{ ...ico, flexShrink: 0 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
@@ -419,13 +707,16 @@ const s = {
     fontSize: 14,
     fontWeight: 600,
     color: '#F0F0F2',
-    margin: '0 0 1.25rem',
-    paddingBottom: 12,
-    borderBottom: '0.5px solid #2A2A38',
+    margin: '0 0 0.5rem',
+  },
+  sectionNote: {
+    margin: 0,
+    fontSize: 12,
+    color: '#7A7A8C',
   },
   sectionHead: {
     display: 'flex',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     justifyContent: 'space-between',
     gap: 12,
     marginBottom: '1.25rem',
@@ -436,6 +727,14 @@ const s = {
     gap: 10,
     flexWrap: 'wrap',
     justifyContent: 'flex-end',
+  },
+  activeTermPill: {
+    padding: '6px 10px',
+    borderRadius: 999,
+    fontSize: 12,
+    border: '0.5px solid rgba(67, 184, 106, 0.22)',
+    background: '#10261a',
+    color: '#b9dfb4',
   },
   feeHint: {
     color: '#7A7A8C',
@@ -536,6 +835,11 @@ const s = {
     display: 'grid',
     gap: 14,
   },
+  termGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
+    gap: 12,
+  },
   feeFormGrid: {
     display: 'grid',
     gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
@@ -557,6 +861,8 @@ const s = {
     display: 'flex',
     alignItems: 'center',
     gap: 10,
+    flexWrap: 'wrap',
+    justifyContent: 'flex-end',
   },
   deleteBtn: {
     display: 'inline-flex',
@@ -571,6 +877,7 @@ const s = {
     fontWeight: 500,
     cursor: 'pointer',
     fontFamily: "'DM Sans', system-ui, sans-serif",
+    whiteSpace: 'nowrap',
   },
   feeSaveBtn: {
     display: 'inline-flex',
@@ -586,6 +893,7 @@ const s = {
     cursor: 'pointer',
     transition: 'background 0.15s',
     fontFamily: "'DM Sans', system-ui, sans-serif",
+    whiteSpace: 'nowrap',
   },
   readOnlyGrid: {
     display: 'grid',

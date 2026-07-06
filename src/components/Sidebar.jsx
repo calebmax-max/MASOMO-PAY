@@ -48,14 +48,14 @@ export default function Sidebar({ activePath }) {
               type="button"
               style={{ ...s.link, ...(active ? s.linkActive : {}) }}
               onClick={() => navigateTo(path)}
-              onMouseEnter={(e) => { if (!active) e.currentTarget.style.background = '#1C1E28'; }}
+              onMouseEnter={(e) => { if (!active) e.currentTarget.style.background = '#13241a'; }}
               onMouseLeave={(e) => { if (!active) e.currentTarget.style.background = 'transparent'; }}
               >
                 {active && <span style={s.activeBar} />}
                 <i
                   className={`ti ${icon}`}
                   aria-hidden="true"
-                  style={{ ...s.icon, color: active ? '#7BB8F4' : '#7A7A8C' }}
+                  style={{ ...s.icon, color: active ? '#93d48e' : '#7A7A8C' }}
                 />
               <span style={s.linkText}>
                 {label}
@@ -80,8 +80,8 @@ const s = {
   sidebar: {
     width: 220,
     minHeight: '100vh',
-    borderRight: '0.5px solid #2A2A38',
-    background: '#0D0F16',
+    borderRight: '0.5px solid rgba(67, 184, 106, 0.14)',
+    background: 'linear-gradient(180deg, #0f172a, #111827)',
     display: 'flex',
     flexDirection: 'column',
     flexShrink: 0,
@@ -93,15 +93,15 @@ const s = {
     alignItems: 'center',
     gap: 10,
     padding: '0 1.25rem 1.25rem',
-    borderBottom: '0.5px solid #2A2A38',
+    borderBottom: '0.5px solid rgba(67, 184, 106, 0.14)',
     marginBottom: '1rem',
   },
   brandMark: {
     width: 34,
     height: 34,
     borderRadius: 8,
-    background: '#0C2A44',
-    border: '0.5px solid #1A3D5C',
+    background: '#10261a',
+    border: '0.5px solid rgba(67, 184, 106, 0.28)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -122,7 +122,7 @@ const s = {
   },
   brandSub: {
     fontSize: 11,
-    color: '#7A7A8C',
+    color: '#93d48e',
     marginTop: 1,
     marginBottom: 0,
   },
@@ -134,7 +134,7 @@ const s = {
   navSection: {
     fontSize: 10,
     fontWeight: 500,
-    color: '#4A4A5A',
+    color: '#6b8d74',
     textTransform: 'uppercase',
     letterSpacing: '0.08em',
     padding: '0 1.25rem',
@@ -149,7 +149,7 @@ const s = {
     padding: '9px 1.25rem',
     border: 'none',
     background: 'transparent',
-    color: '#7A7A8C',
+    color: '#91a79a',
     fontSize: 14,
     fontWeight: 400,
     cursor: 'pointer',
@@ -158,8 +158,8 @@ const s = {
     fontFamily: "'DM Sans', system-ui, sans-serif",
   },
   linkActive: {
-    background: '#0C2A44',
-    color: '#7BB8F4',
+    background: '#10261a',
+    color: '#93d48e',
     fontWeight: 500,
   },
   activeBar: {
@@ -170,7 +170,7 @@ const s = {
     width: 3,
     height: 18,
     borderRadius: '0 3px 3px 0',
-    background: '#378ADD',
+    background: '#43b86a',
   },
   icon: {
     fontSize: 18,
@@ -184,7 +184,7 @@ const s = {
   linkBadge: {
     fontSize: 10,
     fontWeight: 600,
-    color: '#7BB8F4',
+    color: '#93d48e',
     textTransform: 'uppercase',
     letterSpacing: '0.06em',
   },
@@ -193,14 +193,14 @@ const s = {
     alignItems: 'center',
     gap: 7,
     padding: '1rem 1.25rem 0',
-    borderTop: '0.5px solid #2A2A38',
+    borderTop: '0.5px solid rgba(67, 184, 106, 0.14)',
     marginTop: 'auto',
   },
   footerDot: {
     width: 7,
     height: 7,
     borderRadius: '50%',
-    background: '#1D9E75',
+    background: '#43b86a',
     flexShrink: 0,
   },
   footerText: {

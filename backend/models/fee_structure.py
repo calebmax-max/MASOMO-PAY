@@ -12,8 +12,10 @@ class FeeStructure(db.Model):
     term = db.Column(db.String(50), nullable=False)
     amount = db.Column(db.Numeric(12, 2), nullable=False)
     school_id = db.Column(db.Integer, db.ForeignKey("schools.id"), nullable=True)
+    academic_term_id = db.Column(db.Integer, db.ForeignKey("academic_terms.id"), nullable=True)
 
     school = db.relationship("School", back_populates="fee_structures", lazy=True)
+    academic_term = db.relationship("AcademicTerm", back_populates="fee_structures", lazy=True)
 
     __table_args__ = (
         db.UniqueConstraint("class_name", "term", "school_id", name="uq_fee_structure"),
