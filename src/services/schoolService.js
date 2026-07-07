@@ -1,4 +1,4 @@
-﻿import { apiRequest } from './api';
+import { apiRequest } from './api';
 
 export function getSchoolSettings() {
   return apiRequest('/api/settings');

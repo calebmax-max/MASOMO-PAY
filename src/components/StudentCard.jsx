@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import { calculateBalance, formatCurrency } from '../utils/helpers';
 
 const AVATAR_COLORS = [

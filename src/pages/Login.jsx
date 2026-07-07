@@ -27,23 +27,23 @@ export default function Login() {
   return (
     <AuthLayout
       kicker="Staff access"
-      title="Manage school fees, balances, and payments from one polished dashboard."
-      description="Use your staff credentials to review balances, follow payment activity, and keep school finance work moving quickly."
+      title="Manage fees and payments in one dashboard."
+      description="Sign in to review balances, track payments, and manage school finances."
       highlights={[
         {
           title: 'Secure access',
-          description: 'Restricted login for staff and administrators.',
+          description: 'Restricted to staff and administrators.',
         },
         {
-          title: 'Real-time records',
-          description: 'See balances, payments, and updates in one view.',
+          title: 'Live records',
+          description: 'Balances and payments, always current.',
         },
         {
           title: 'Fast workflow',
-          description: 'Get in, review what matters, and move on.',
+          description: 'Review what matters, then move on.',
         },
       ]}
-      panelTitle="Staff sign in"
+      panelTitle="Sign in"
     >
       <form className="portal-auth-form" onSubmit={handleSubmit}>
         <label className="portal-field">

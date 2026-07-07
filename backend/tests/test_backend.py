@@ -10,6 +10,7 @@ from models.academic_term import AcademicTerm
 from models.fee_structure import FeeStructure
 from models.school import School
 from models.student import Student
+from routes.portal import get_student_term_fees
 from services.academic_terms import apply_term_fees_for_school
 from services.reconcile import reconcile_payment
 
@@ -312,6 +313,51 @@ class BackendTestCase(unittest.TestCase):
         self.assertEqual(update_response.status_code, 200)
         self.assertEqual(update_response.get_json()["school"]["name"], "Masomo Pay School")
 
+    def test_portal_profile_falls_back_to_term_name_for_fee_structures(self):
+        school = School(
+            name="Portal School",
+            phone="+254700000003",
+            email="portal2@masomo.ac.ke",
+            address="Kisumu",
+        )
+        db.session.add(school)
+        db.session.flush()
+
+        today = date.today()
+        current_term = AcademicTerm(
+            name="Term 1",
+            start_date=today - timedelta(days=10),
+            end_date=today + timedelta(days=20),
+            school_id=school.id,
+        )
+        db.session.add(current_term)
+        db.session.flush()
+
+        db.session.add(
+            FeeStructure(
+                class_name="Grade 1, Form 2A",
+                term="Term 1",
+                amount=2500,
+                school_id=school.id,
+                academic_term_id=None,
+            )
+        )
+
+        student = Student(
+            name="Mina Mwangi",
+            admission_no="ADM902",
+            class_name="Grade 1",
+            parent_phone="0712345678",
+            portal_pin_hash="pbkdf2:sha256:1000$test$test",
+            balance=1000,
+            school_id=school.id,
+        )
+        db.session.add(student)
+        db.session.commit()
+
+        term_fees = get_student_term_fees(student)
+        self.assertEqual(term_fees["present"]["amount"], 2500.0)
+
     def test_fee_structures_link_to_active_term(self):
         school = School(
             name="Masomo Academy",
@@ -513,6 +559,22 @@ class BackendTestCase(unittest.TestCase):
         self.assertIn("present", profile_response.get_json()["term_fees"])
         self.assertIn("last", profile_response.get_json()["term_fees"])
         self.assertIn("next", profile_response.get_json()["term_fees"])
+
+    def test_student_portal_login_accepts_case_insensitive_admission_numbers(self):
+        token = self.register_admin("portal-login@example.com")
+        student = self.create_student(token, "ADM950", "4321")
+        student_record = Student.query.filter_by(admission_no="ADM950").first()
+        student_record.portal_pin_hash = "4321"
+        db.session.commit()
+
+        login_response = self.client.post(
+            "/api/portal/login",
+            json={
+                "admission_no": "adm950",
+                "pin": "4321",
+            },
+        )
+        self.assertEqual(login_response.status_code, 200)
 
     def test_student_portal_flow(self):
         token = self.register_admin("portal@example.com")

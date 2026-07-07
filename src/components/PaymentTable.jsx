@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import { formatCurrency, formatDate } from '../utils/helpers';
 
 export default function PaymentTable({ payments = [] }) {

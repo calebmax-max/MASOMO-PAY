@@ -67,15 +67,17 @@ def reconcile_payment(payload):
         existing_payment = Payment.query.filter_by(gateway_reference=gateway_reference).first()
     if existing_payment is None and mpesa_code:
         existing_payment = Payment.query.filter_by(mpesa_code=mpesa_code).first()
-    if existing_payment is None and payment_is_successful:
+    if existing_payment is None and payment_is_successful and (student_id or admission_no):
         pending_query = Payment.query.filter_by(status="pending")
         if student_id:
             pending_query = pending_query.filter_by(student_id=student_id)
-        elif admission_no:
+        else:
             pending_query = pending_query.join(Student, Payment.student_id == Student.id).filter(Student.admission_no == admission_no)
         if amount:
             pending_query = pending_query.filter(Payment.amount == amount)
-        existing_payment = pending_query.order_by(Payment.timestamp.desc()).first()
+        # Oldest pending payment first: if a student has two same-amount pending
+        # STK pushes, the earliest one should be the one a webhook resolves to.
+        existing_payment = pending_query.order_by(Payment.timestamp.asc()).first()
 
     if existing_payment:
         if existing_payment.status != "pending":
@@ -90,10 +92,9 @@ def reconcile_payment(payload):
                 existing_payment.mpesa_code = mpesa_code
             existing_payment.status = "completed"
             if existing_payment.student:
-                existing_payment.student.balance = max(
-                    Decimal(str(existing_payment.student.balance or 0)) - amount,
-                    Decimal("0"),
-                )
+                existing_payment.student.balance = Decimal(
+                    str(existing_payment.student.balance or 0)
+                ) - amount
             db.session.commit()
             return existing_payment, "matched"
 
@@ -120,7 +121,7 @@ def reconcile_payment(payload):
     db.session.add(payment)
 
     if student and payment_is_successful:
-        student.balance = max(Decimal(str(student.balance or 0)) - amount, Decimal("0"))
+        student.balance = Decimal(str(student.balance or 0)) - amount
 
     db.session.commit()
     if student and payment_is_successful:

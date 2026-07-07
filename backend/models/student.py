@@ -15,6 +15,9 @@ class Student(db.Model):
     portal_pin_hash = db.Column(db.String(255), nullable=True)
     balance = db.Column(db.Numeric(12, 2), nullable=False, default=0)
     school_id = db.Column(db.Integer, db.ForeignKey("schools.id"), nullable=True)
+    last_billed_term_id = db.Column(
+        db.Integer, db.ForeignKey("academic_terms.id"), nullable=True
+    )
 
     school = db.relationship("School", back_populates="students", lazy=True)
     payments = db.relationship("Payment", back_populates="student", lazy=True)

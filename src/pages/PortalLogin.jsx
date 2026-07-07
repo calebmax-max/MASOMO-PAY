@@ -27,12 +27,12 @@ export default function PortalLogin() {
   return (
     <AuthLayout
       kicker="Parent & student access"
-      title="Check fees, pay from your phone, and see every transaction in one place."
-      description="Use your admission number and portal PIN to open the student account. The portal stays quick on mobile with a clear balance view and recent payment history."
+      title="Check fees and pay directly from your phone."
+      description="Sign in with your admission number and PIN to view balances, make payments, and track transaction history."
       highlights={[
         {
           title: 'Fast login',
-          description: 'Admission number plus PIN.',
+          description: 'Admission number and PIN.',
         },
         {
           title: 'Clear balance',
@@ -40,10 +40,10 @@ export default function PortalLogin() {
         },
         {
           title: 'Payment trail',
-          description: 'Track STK requests and receipts.',
+          description: 'Track requests and receipts.',
         },
       ]}
-      panelTitle="Portal sign in"
+      panelTitle="Sign in"
     >
       <form className="portal-auth-form" onSubmit={handleSubmit}>
         <label className="portal-field">

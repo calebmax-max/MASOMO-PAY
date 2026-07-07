@@ -68,7 +68,7 @@ def manual_payment():
         {
             "student_id": student.id,
             "amount": payload["amount"],
-            "payment_method": payload.get("payment_method", "manual"),
+            "payment_method": "manual",
             "mpesa_code": payload.get("mpesa_code"),
             "recorded_by": int(get_jwt_identity()),
             "admission_no": student.admission_no,
